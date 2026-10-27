@@ -1,0 +1,22 @@
+{$CADDY_SITE_ADDRESS::80} {
+	encode zstd gzip
+
+	# Keep API requests separate from browser document routes such as /products.
+	handle_path /api/* {
+		reverse_proxy api:8080
+	}
+
+	@backend {
+		path /units /units/* /storage-locations /auth/* /admin/* /health /products /products/* /purchases /purchases/* /sales /sales/* /stock/* /price-types /price-types/* /batches/* /counterparties /counterparties/* /settlements/* /money/* /expense-categories /expense-categories/* /expenses /expenses/* /customer-returns /customer-returns/* /supplier-returns /supplier-returns/* /stock-transfers /stock-transfers/* /write-off-reasons /write-off-reasons/* /write-offs /write-offs/*
+		not header Accept *text/html*
+	}
+	handle @backend {
+		reverse_proxy api:8080
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
