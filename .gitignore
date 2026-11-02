@@ -6,6 +6,7 @@
 .env
 .env.*
 !.env.example
+!.env.staging.example
 *.user
 *.suo
 .vs/
@@ -13,3 +14,35 @@
 .DS_Store
 *.log
 coverage/
+
+# Local connection settings and secret material stay on the machine.
+/backend/Trade.Api/appsettings.Development.json
+**/appsettings.*.local.json
+.pgpass
+*.pem
+*.key
+*.pfx
+*.p12
+**/DataProtection-Keys/
+**/data-protection/
+**/data_protection/
+**/key-*.xml
+
+# Database/storage copies and generated run artifacts are not source files.
+*.dump
+*.backup
+*.sql.gz
+*.tar.gz
+*.tgz
+**/volumes/
+**/postgres-data/
+**/pgdata/
+**/backups/
+**/artifacts/
+**/test-results/
+**/playwright-report/
+**/blob-report/
+*.trx
+*.har
+**/private-session.json
+**/private-fixtures.json

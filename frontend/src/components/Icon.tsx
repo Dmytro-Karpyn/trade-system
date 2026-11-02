@@ -2,6 +2,10 @@ import { SvgIcon } from '@mui/material'
 import type { SvgIconProps } from '@mui/material'
 
 const paths = {
+  bell: 'M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4',
+  more: 'M5 12h.01M12 12h.01M19 12h.01M5 11a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2Zm7 0a1 1 0 1 0 0 2 1 1 0 0 0 0-2Z',
+  collapse: 'M4 3h16v18H4V3Zm4 0v18m8-13-4 4 4 4',
+  expand: 'M4 3h16v18H4V3Zm4 0v18m4-13 4 4-4 4',
   edit: 'm16 3 5 5-12 12H4v-5L16 3Zm-3 3 5 5',
   back: 'M19 12H5m6-6-6 6 6 6',
   home: 'M3 10.5 12 3l9 7.5M5 9v11h5v-6h4v6h5V9',

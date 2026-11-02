@@ -8,6 +8,7 @@ public sealed class ProductService(ITradeStore store)
         store.InTransactionAsync(async token =>
         {
             await RequireUnitScopeAsync(organizationId, request.UnitId, token);
+            await RequireCategoryScopeAsync(organizationId,request.CategoryId,token);
             var product = Product.Create(organizationId, request.ToDetails());
             store.AddProduct(product);
             return product.ToResponse();
@@ -26,6 +27,7 @@ public sealed class ProductService(ITradeStore store)
             var product = await store.FindProductAsync(organizationId, id, true, token)
                 ?? throw new NotFoundException("Product not found.");
             await RequireUnitScopeAsync(organizationId, request.UnitId, token);
+            await RequireCategoryScopeAsync(organizationId,request.CategoryId,token);
             var hasLines = request.ItemType == ItemType.SERVICE && await store.HasPurchaseLinesAsync(id, token);
             var hasSaleLines = request.ItemType != product.ItemType && await store.HasSaleLinesAsync(id, token);
             var hasPrices = request.ItemType != product.ItemType && await store.HasProductPricesAsync(id, token);
@@ -38,5 +40,9 @@ public sealed class ProductService(ITradeStore store)
         // Preserve earlier externally supplied UnitId values; known directory entries cannot cross tenants.
         if (await store.IsForeignUnitAsync(organizationId, unitId, ct))
             throw new Trade.Domain.Common.DomainException("Unit must belong to the current organization.");
+    }
+    private async Task RequireCategoryScopeAsync(Guid org,Guid? category,CancellationToken ct)
+    {
+        if(category is { } id && await store.IsForeignCategoryAsync(org,id,ct))throw new Trade.Domain.Common.DomainException("Category must belong to current organization.");
     }
 }

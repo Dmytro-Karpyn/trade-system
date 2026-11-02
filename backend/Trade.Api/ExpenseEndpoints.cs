@@ -25,15 +25,20 @@ public static class ExpenseEndpoints
         }).Produces<ExpenseCategoryResponse>().ProducesProblem(400).ProducesProblem(404);
 
         var expenses = app.MapGroup("/expenses").WithTags("Expenses");
+        expenses.MapGet("/lookups", async (RequestContext context, IExpenseQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.LookupsAsync(context.OrganizationId, ct))).Produces<ExpenseLookups>();
+        expenses.MapGet("/{id:guid}/cost-impact", async (Guid id, RequestContext context, IExpenseQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.CostImpactAsync(context.OrganizationId, id, ct))).Produces<ExpenseCostImpact>();
         expenses.MapPost("", async (ExpenseRequest request, RequestContext context, ExpenseService service, CancellationToken ct) =>
         {
             var expense = await service.CreateAsync(context.OrganizationId, context.ActorId, request, ct);
             return Results.Created($"/expenses/{expense.Document.Id}", expense);
         }).Produces<ExpenseResponse>(201).ProducesProblem(400);
         expenses.MapGet("", async (DateOnly? from, DateOnly? to, Guid? counterpartyId, Guid? categoryId,
-            Guid? purchaseInvoiceId, DocumentStatus? status, Guid? currencyId, RequestContext context, ExpenseService service, CancellationToken ct) =>
+            Guid? purchaseInvoiceId, DocumentStatus? status, Guid? currencyId, string? search, bool? isPurchaseExpense,
+            RequestContext context, ExpenseService service, CancellationToken ct) =>
             Results.Ok(await service.ListAsync(context.OrganizationId,
-                new(from, to, counterpartyId, categoryId, purchaseInvoiceId, status, currencyId), ct)))
+                new(from, to, counterpartyId, categoryId, purchaseInvoiceId, status, currencyId, search, isPurchaseExpense), ct)))
             .Produces<IReadOnlyList<ExpenseResponse>>().ProducesProblem(400);
         expenses.MapGet("/{id:guid}", async (Guid id, RequestContext context, ExpenseService service, CancellationToken ct) =>
             Results.Ok(await service.GetAsync(context.OrganizationId, id, ct))).Produces<ExpenseResponse>().ProducesProblem(404);

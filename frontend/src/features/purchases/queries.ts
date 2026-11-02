@@ -6,7 +6,7 @@ import { hasAnyPermission } from '../../auth/contracts'
 import { productSchema } from '../products/contracts'
 import { partyKeys } from '../counterparties/queries'
 import { counterpartySchema, partyReadPermissions } from '../counterparties/contracts'
-import { batchPriceSchema, batchSchema, costSchema, locationSchema, lookupsSchema, purchaseListSchema, purchaseSchema } from './contracts'
+import { batchPriceSchema, batchSchema, costSchema, locationSchema, lookupsSchema, purchaseExpenseSchema, purchaseListSchema, purchaseSchema } from './contracts'
 import type { Purchase, PurchaseFilters, PurchaseInput } from './contracts'
 
 export const purchaseKeys = { all: ['purchases'] as const, list: (filters: PurchaseFilters) => ['purchases', 'list', filters] as const, detail: (id: string) => ['purchases', 'detail', id] as const, batches: (id: string) => ['purchases', 'batches', id] as const, costs: (id: string) => ['purchases', 'costs', id] as const, prices: (id: string) => ['purchases', 'prices', id] as const, lookups: ['purchase-lookups'] as const }
@@ -34,6 +34,10 @@ export function usePurchaseCosts(id: string, enabled: boolean) {
 export function usePurchasePrices(id: string) {
   const { api } = useAppServices()
   return useQuery({ queryKey: purchaseKeys.prices(id), queryFn: ({ signal }) => api.request(`/purchases/${encodeURIComponent(id)}/batch-prices`, { signal, schema: z.array(batchPriceSchema) }) })
+}
+export function usePurchaseExpenses(id: string, enabled: boolean) {
+  const { api } = useAppServices()
+  return useQuery({ queryKey: ['expenses', 'purchase', id], enabled, queryFn: ({ signal }) => api.request(`/expenses?purchaseInvoiceId=${encodeURIComponent(id)}`, { signal, schema: z.array(purchaseExpenseSchema) }) })
 }
 export function usePurchaseProductSearch(search: string, enabled: boolean) {
   const { api } = useAppServices()

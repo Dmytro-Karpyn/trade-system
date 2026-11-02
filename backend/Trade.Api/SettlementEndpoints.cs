@@ -27,6 +27,11 @@ public static class SettlementEndpoints
         }).Produces<CounterpartyResponse>();
 
         var settlements = app.MapGroup("/settlements").WithTags("Settlements");
+        settlements.MapGet("/overview", async (string? search, SettlementBalanceState? state, Guid? currencyId, RequestContext context,
+            IFinanceQueries queries, CancellationToken ct) => Results.Ok(await queries.SettlementsAsync(context.OrganizationId, search, state, currencyId, ct)))
+            .Produces<IReadOnlyList<SettlementOverviewRow>>();
+        settlements.MapGet("/currencies", async (RequestContext context, IFinanceQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.CurrenciesAsync(context.OrganizationId, ct))).Produces<IReadOnlyList<Guid>>();
         settlements.MapGet("/balances", async (Guid? counterpartyId, Guid? currencyId, RequestContext context,
             SettlementService service, CancellationToken ct) =>
             Results.Ok(await service.BalancesAsync(context.OrganizationId, counterpartyId, currencyId, ct)))

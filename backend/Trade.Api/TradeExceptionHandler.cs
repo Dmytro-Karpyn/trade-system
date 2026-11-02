@@ -14,6 +14,12 @@ public sealed class TradeExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is ConflictException { Message: "LAST_ADMIN_REQUIRED" })
+        {
+            context.Response.StatusCode=409;
+            await Results.Problem(statusCode:409,detail:"At least one active administrator must remain.",extensions:new Dictionary<string,object?> { ["code"]="LAST_ADMIN_REQUIRED" }).ExecuteAsync(context);
+            return true;
+        }
         if (exception is ReturnQuantityExceededException or ReturnAmountExceededException)
         {
             context.Response.StatusCode = 409;

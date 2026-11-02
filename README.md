@@ -1,6 +1,6 @@
 # Trade System
 
-Modular monolith для торгово-складської системи. Реалізовано номенклатуру → закупівлю → партії → складський прихід; продажі → резерви → списання; pricing → ціни партій/послуг і snapshot продажу; контрагентів → взаєморозрахунки; грошові рахунки → надходження/оплати/перекази; категорії витрат → операційні та прямі закупівельні витрати. Залишки, собівартість і баланси обчислюються без кешів. Є EF-міграції та integration tests. Додано Identity login/logout, користувачів, ролі та permissions. Frontend має login, authenticated shell, permissions-aware navigation, dashboard із порожніми бізнес-показниками, Product та Counterparty CRUD і взаєморозрахунки контрагента.
+Modular monolith для торгово-складської системи. Реалізовано номенклатуру → закупівлю → партії → складський прихід; продажі → резерви → списання; pricing → ціни партій/послуг і snapshot продажу; контрагентів → взаєморозрахунки; грошові рахунки → надходження/оплати/перекази; категорії витрат → операційні та прямі закупівельні витрати. Залишки, собівартість і баланси обчислюються без кешів. Є EF-міграції та integration tests. Додано Identity login/logout, користувачів, ролі та permissions. Frontend має login, authenticated shell, permissions-aware navigation, робочі бізнес-екрани, Dashboard/Reports, спільні довідники та керування користувачами/ролями з read-only аудитом.
 
 CustomerReturn реалізовано на основі POSTED продажу: повернення GOODS у той самий Batch, часткові компенсації SERVICE та негативний settlement без автоматичного платежу. Ліміти й доступні для повернення рядки обчислюються з проведених документів.
 
@@ -32,6 +32,10 @@ Caddyfile
 
 ```sh
 cp .env.example .env
+# Set a unique POSTGRES_PASSWORD in .env before starting PostgreSQL.
+# .NET does not read .env; use the SAME password in this connection string.
+export ASPNETCORE_ENVIRONMENT=Development
+export ConnectionStrings__TradeDatabase='Host=localhost;Port=5432;Database=trade;Username=trade;Password=YOUR_LOCAL_SECRET;Timeout=5;Command Timeout=5'
 docker compose up -d --wait postgres
 dotnet restore backend/Trade.slnx --locked-mode
 dotnet tool restore
@@ -52,6 +56,14 @@ npm --prefix frontend run dev
 Frontend використовує порт 5173, API — 5080. Browser API client працює через `/api` proxy (Vite/Caddy прибирає prefix), base URL можна змінити через `VITE_API_BASE_URL`. Browser routes `/products`, `/sales` тощо отримують SPA, зокрема при перезавантаженні. `/login` використовує Identity cookies + CSRF; dashboard і всі розділи потребують current-user session. Показники та останні операції — порожні стани, статус системи читається з `/health`. Дизайн, матриця permissions і тестування: [docs/frontend.md](docs/frontend.md). Номенклатура `/products` має список, пошук/фільтри, create/detail/edit та inline додавання одиниці: [docs/products-ui.md](docs/products-ui.md).
 
 Прихідні накладні `/purchases`, `/purchases/new`, `/purchases/:id`: список, DRAFT, POST/UNPOST, партії/собівартість/ціни та погоджене inline додавання складу. Перед запуском застосуйте нову міграцію `PurchaseStorageLocations`. Деталі: [docs/purchases-ui.md](docs/purchases-ui.md).
+
+Продажі `/sales`, `/sales/new`, `/sales/:id`: список і фільтри, товари та послуги, резерви DRAFT, підбір партій, ціни/snapshots, POST/UNPOST/delete і поточні cost/profit за правами. Нових міграцій для Sale UI немає. Деталі: [docs/sales-ui.md](docs/sales-ui.md).
+
+Склад `/stock`: GOODS залишки по товарах/партіях, деталі Product/Batch, рухи та джерела резерву. `/stock/transfers` і `/stock/write-offs` мають базові форми та POST/UNPOST/delete. Нових таблиць або міграцій немає. Деталі й обмеження довідників: [docs/stock-ui.md](docs/stock-ui.md).
+
+Гроші `/money`: рахунки, надходження, виплати й перекази з POST/UNPOST та logical delete DRAFT. `/settlements` і `/settlements/:counterpartyId` показують unified balances та історію з посиланнями на документи. Від’ємний баланс рахунку дозволений. Нових міграцій немає: [docs/money-settlements-ui.md](docs/money-settlements-ui.md).
+
+Витрати `/expenses`, `/expenses/new`, `/expenses/:id` та `/expense-categories`: загальні/закупівельні витрати, дерево категорій, POST/UNPOST/delete, поточна собівартість за правами й передзаповнення виплати без автоматичного створення документа. Нових таблиць/міграцій немає: [docs/expenses-ui.md](docs/expenses-ui.md).
 
 Перевірка API з термінала:
 
@@ -106,7 +118,7 @@ dotnet ef migrations has-pending-model-changes --project backend/Trade.Infrastru
 
 Гроші: `POST/GET /money/accounts`, `GET/PUT /money/accounts/{id}`, `GET /money/balances`. Для кожного виду `receipts`, `payments`, `transfers`: `POST /money/{kind}`, `GET/PUT /money/{kind}/{id}`, `POST /money/{kind}/{id}/post`, `POST /money/{kind}/{id}/unpost`. Тип операції задає маршрут і Document.DocumentType, окремого operation_type немає. Рахунок має одну валюту; використана валюта незмінна. DRAFT не створює рухів. POST і UNPOST атомарні та ідемпотентні; номер зберігається після UNPOST. Мінус дозволений завжди, перевірки достатності коштів немає. Баланс — тільки `v_money_account_balance` через SUM(Amount).
 
-Receipt створює плюс на DestinationAccount, payment — мінус на SourceAccount, transfer — обидва рухи. Переказ однієї валюти потребує рівних сум, різних — може мати різні суми без збереженого effective rate. SETTLEMENT receipt зменшує settlement баланс (мінус), payment збільшує (плюс); використовуються окремі SettlementCurrencyId/Amount/ExchangeRate. UAH rate = 1 (пропущений підставляється, інший відхиляється). OWNER, OPENING_BALANCE, null Purpose та transfer settlement не створюють. UI, PaymentAllocation та прив’язка оплат до invoices відсутні; приклади — у docs/scenarios.md.
+Receipt створює плюс на DestinationAccount, payment — мінус на SourceAccount, transfer — обидва рухи. Переказ однієї валюти потребує рівних сум, різних — може мати різні суми без збереженого effective rate. SETTLEMENT receipt зменшує settlement баланс (мінус), payment збільшує (плюс); використовуються окремі SettlementCurrencyId/Amount/ExchangeRate. UAH rate = 1 (пропущений підставляється, інший відхиляється). OWNER, OPENING_BALANCE, null Purpose та transfer settlement не створюють. PaymentAllocation та прив’язка оплат до invoices відсутні; грошові форми описані у docs/money-settlements-ui.md, API приклади — у docs/scenarios.md.
 
 Витрати: `POST/GET /expense-categories`, `GET/PUT /expense-categories/{id}` — дерево без циклів; `POST/GET /expenses`, `GET/PUT/DELETE /expenses/{id}`, `POST /expenses/{id}/post|unpost`. Фільтри списку: `from`, `to` (включно), `counterpartyId`, `categoryId`, `purchaseInvoiceId`, `status`, `currencyId`. PUT потребує Version. POST створює негативний settlement без MoneyMovement; оплата — окремий SETTLEMENT payment. Текст у Document.Comment/InternalNote. Direct Expense має PurchaseInvoiceId на POSTED PURCHASE_INVOICE своєї організації; нульова вартість → `INVALID_PURCHASE_EXPENSE_ALLOCATION`. Невилучений direct Expense, також DRAFT, блокує UNPOST закупівлі → `DOCUMENT_HAS_DEPENDENCIES`. DELETE лише логічний і лише DRAFT. POST/UNPOST/редагування direct Expense змінюють поточний cost і можуть перерахувати історичний gross profit; BatchPrice зберігається.
 
@@ -147,36 +159,40 @@ Integration tests запускають PostgreSQL 18 через Testcontainers; 
 
 ## Docker Compose + Caddy
 
-```sh
-docker compose --profile app build
-docker compose up -d --wait postgres
-docker compose --profile app run --rm --no-deps api --migrate
-docker compose --profile app up -d --wait
-curl --fail http://localhost/health
-docker compose --profile app logs api caddy
-```
+Для staging/production використовуйте окремий `compose.production.yaml` і приватний `.env.production`, підготовлений за `.env.example`. Повний порядок першого запуску, окремий runtime DB role, міграції та явний bootstrap адміністратора: [docs/production-readiness.md](docs/production-readiness.md). Звичайний запуск і `--migrate` не створюють production admin.
 
-Caddy віддає зібраний frontend і проксіює `/auth/*`, `/admin/*`, `/health`, `/products`, `/purchases`, `/sales`, `/stock/*`, `/price-types`, `/batches/*`, `/counterparties`, `/settlements/*`, `/money/*`, `/expense-categories`, `/expense-categories/*`, `/expenses`, `/expenses/*` до API. API не публікує порт назовні, PostgreSQL доступний на host лише через loopback. Режим `:80` призначений для локальної перевірки. Для розгортання задайте в `.env` унікальний `POSTGRES_PASSWORD`, `CADDY_SITE_ADDRESS=trade.example.com`, налаштуйте DNS на сервер та відкрийте порти 80/443: Caddy отримає TLS-сертифікат автоматично. Cookie в Production мають Secure і потребують HTTPS. Образи й залежності можна збирати без локальних .NET/Node. Caddy також обробляє `/api/*` зі зняттям prefix; HTML document requests отримують SPA. API приймає original HTTPS scheme лише від довірених proxy (Compose: `REVERSE_PROXY_KNOWN_NETWORK`, default 172.16.0.0/12). Production потребує HTTPS для cookie-сесій; development seed у ньому вимкнений. Production bootstrap користувачів не входить до цього slice.
-
-Compose зберігає PostgreSQL, Caddy certificates/config і ASP.NET Data Protection keys у named volumes. У production обмежте доступ до секретів і резервних копій цих volumes; ключі Data Protection у volume не зашифровані окремим key-encryption key.
-
-Якщо середовище використовує HTTPS proxy із власним CA, передайте його довірений публічний сертифікат як BuildKit secret; TLS-перевірка залишається увімкненою. Сертифікат використовується лише на етапі збірки, не потрапляє до runtime image:
+Після виконання prerequisites і початкового налаштування БД:
 
 ```sh
-docker build --secret id=proxy_ca,src=/path/to/trusted-proxy-ca.crt -f backend/Trade.Api/Dockerfile -t trade-system-api .
-docker build --secret id=proxy_ca,src=/path/to/trusted-proxy-ca.crt -f frontend/Dockerfile -t trade-system-caddy .
-docker compose up -d --wait postgres
-docker compose --profile app run --rm --no-deps api --migrate
-docker compose --profile app up -d --no-build --wait
+docker compose --env-file .env.production -f compose.production.yaml config --quiet
+docker compose --env-file .env.production -f compose.production.yaml build
+docker compose --env-file .env.production -f compose.production.yaml up -d --wait
+curl --fail https://YOUR_DOMAIN/health
+docker compose --env-file .env.production -f compose.production.yaml logs --tail 100 api caddy
 ```
 
-Якщо hostname проксі відомий лише host-машині, Docker-збірці також потрібні `--add-host PROXY_HOST:PROXY_IP` та `--build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY`. Значення беруться з уже налаштованого середовища; не записуйте proxy credentials у Dockerfile. Внутрішні запити Caddy до API виключені з проксі через `NO_PROXY` у Compose.
+Frontend — статичний production build у Caddy image; окремого Node server немає. Caddy забезпечує HTTPS, `/api` reverse proxy і SPA fallback. API та PostgreSQL не мають опублікованих host ports. API запускається після успішних міграцій, Caddy — після API healthcheck. PostgreSQL, Caddy certificates/config та Data Protection keys зберігаються у named volumes.
+
+`compose.yaml` залишається локальним PostgreSQL/development варіантом із legacy `app` profile. Не використовуйте його замість production Compose. Для `localhost` Caddy використовує локальний CA; Secure cookies потребують `https://localhost`, а не HTTP. Для публічного DNS hostname Caddy отримує сертифікат автоматично; потрібні DNS і відкриті 80/443.
+
+Якщо build-середовище використовує HTTPS proxy із власним CA, передайте довірений публічний сертифікат як BuildKit secret. Не вимикайте TLS validation і не записуйте proxy credentials у Dockerfile:
 
 ```sh
-docker compose --profile app down
+docker build --secret id=proxy_ca,src=/path/to/trusted-proxy-ca.crt -f backend/Trade.Api/Dockerfile -t trade-system-api:production .
+docker build --secret id=proxy_ca,src=/path/to/trusted-proxy-ca.crt -f frontend/Dockerfile -t trade-system-web:production .
 ```
 
-Ця команда зберігає дані. `down -v` видаляє volumes і дані — використовуйте лише для свідомого скидання локального середовища.
+За потреби передайте `--build-arg HTTP_PROXY --build-arg HTTPS_PROXY --build-arg NO_PROXY` та `--add-host PROXY_HOST:PROXY_IP` із налаштованого оператором середовища. Мережа має дозволяти офіційні Microsoft/Docker/NuGet/npm registries та їх CDN.
+
+```sh
+docker compose --env-file .env.production -f compose.production.yaml down
+```
+
+Ця команда зберігає дані. Не використовуйте `down -v` для середовища з потрібними даними.
+
+Повернення покупців/постачальникам: списки, форми за проведеною накладною, компенсація, reserve та lifecycle. Див. [returns-ui.md](docs/returns-ui.md).
+
+Dashboard і сім read-only звітів: [dashboard-reports.md](docs/dashboard-reports.md). Поточна собівартість, permissions, CSV і мобільні фільтри; нових таблиць немає.
 
 ## Межі slice
 
@@ -184,4 +200,8 @@ IdentityCore/UserManager/SignInManager працюють через мініма�
 
 React Hook Form і Zod підготовлені для наступних форм; штучних бізнес-форм немає. Zod уже перевіряє відповідь health endpoint. Архітектура, обмеження та сценарії описані в `docs/`; правила для подальшої роботи — у `AGENTS.md`.
 
-Opening settlement UI, MFA/SSO/LDAP, password reset email, historical stock validation, currency revaluation report, printed forms, бізнес-UI, PaymentAllocation, Obligation та Advance tables не реалізовані. Довідники, крім Unit, PriceType, Counterparty, MoneyAccount і ExpenseCategory, поки передаються як зовнішні GUID без додаткових таблиць. Рухи й партії не містять дубльованих ProductId/OrganizationId, дата руху береться з Document.
+Opening settlement UI, MFA/SSO/LDAP, password reset email, historical stock validation, currency revaluation report, printed forms, PaymentAllocation, Obligation та Advance tables не реалізовані. ProductCategory, Unit, StorageLocation, PriceType, Counterparty, MoneyAccount, ExpenseCategory та WriteOffReason мають довідники; валюти поки зовнішні GUID без окремої таблиці. Рухи й партії не містять дубльованих ProductId/OrganizationId, дата руху береться з Document.
+
+Довідники й адміністрування: `/directories`, `/admin/users`, `/admin/roles`, `/admin/audit`. Міграція `20261029210258_DirectoriesAndAudit` додає product_categories, audit_logs та Active у units/storage_locations. Правила, API, запуск перевірок і обмеження — [docs/directories-admin.md](docs/directories-admin.md).
+
+Ціни SERVICE в Product UI (ProductPrice, початкові ціни, snapshot Sale, аудит): [docs/service-pricing-ui.md](docs/service-pricing-ui.md). Повний V1 audit і результати перевірок: [docs/v1-audit.md](docs/v1-audit.md).

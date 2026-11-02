@@ -14,6 +14,11 @@ export const lookupsSchema = z.object({ locations: z.array(locationSchema), curr
 export type PurchaseLookups = z.infer<typeof lookupsSchema>
 export const batchSchema = z.object({ batchId: z.guid(), purchaseInvoiceLineId: z.guid(), productId: z.guid(), productName: z.string(), productCode: z.string(), batchNumber: z.string(), createdAt: z.string() })
 export type PurchaseBatch = z.infer<typeof batchSchema>
+export const purchaseExpenseSchema = z.object({
+  document: z.object({ id: z.guid(), documentDate: z.iso.date(), number: z.string().nullable(), status: z.enum(['DRAFT', 'POSTED']), comment: z.string().nullable() }),
+  purchaseInvoiceId: z.guid().nullable(), currencyId: z.guid(), amount: z.number(),
+})
+export type PurchaseExpense = z.infer<typeof purchaseExpenseSchema>
 export const costSchema = z.object({ batchId: z.guid(), unitCostUah: z.number() })
 export const batchPriceSchema = z.object({ batchId: z.guid(), priceTypeId: z.guid(), priceTypeName: z.string(), unitPrice: z.number() })
 export interface PurchaseFilters { search: string; from: string; to: string; counterpartyId: string; storageLocationId: string; currencyId: string; status: '' | 'DRAFT' | 'POSTED' }
@@ -29,7 +34,7 @@ export const purchaseFormSchema = z.object({
 export type PurchaseFormValues = z.infer<typeof purchaseFormSchema>
 export function localDate() { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}` }
 export function formDefaults(purchase?: Purchase): PurchaseFormValues {
-  return purchase ? { documentDate: purchase.document.documentDate, counterpartyId: purchase.counterpartyId ?? '', storageLocationId: purchase.storageLocationId, currencyId: purchase.currencyId, exchangeRate: purchase.exchangeRate, discountPercent: purchase.discountPercent, externalNumber: purchase.externalNumber ?? '', externalDate: purchase.externalDate ?? '', comment: purchase.document.comment ?? '', internalNote: purchase.document.internalNote ?? '', lines: purchase.lines.filter(line => !line.removedAt).sort((a, b) => a.lineNo - b.lineNo).map(line => ({ lineId: line.id, productId: line.productId, quantity: line.quantity, unitPriceCurrency: line.unitPriceCurrency })) }
+  return purchase ? { documentDate: purchase.document.documentDate, counterpartyId: purchase.counterpartyId ?? '', storageLocationId: purchase.storageLocationId, currencyId: purchase.currencyId, exchangeRate: purchase.currencyId === uahId ? 1 : purchase.exchangeRate, discountPercent: purchase.discountPercent, externalNumber: purchase.externalNumber ?? '', externalDate: purchase.externalDate ?? '', comment: purchase.document.comment ?? '', internalNote: purchase.document.internalNote ?? '', lines: purchase.lines.filter(line => !line.removedAt).sort((a, b) => a.lineNo - b.lineNo).map(line => ({ lineId: line.id, productId: line.productId, quantity: line.quantity, unitPriceCurrency: line.unitPriceCurrency })) }
     : { documentDate: localDate(), counterpartyId: '', storageLocationId: '', currencyId: uahId, exchangeRate: 1, discountPercent: 0, externalNumber: '', externalDate: '', comment: '', internalNote: '', lines: [] }
 }
 export function purchaseInput(values: PurchaseFormValues, purchase?: Purchase) {
@@ -44,7 +49,7 @@ export function currencyName(id: string, ids: readonly string[]) { return id ===
 export function purchaseError(error: unknown) {
   if (error instanceof ApiError) {
     if (error.code === 'VERSION_CONFLICT' || error.status === 409 && /stale|concurrent modification/i.test(error.detail ?? '')) return 'Документ був змінений іншим користувачем. Оновіть дані.'
-    if (error.code === 'DOCUMENT_HAS_DEPENDENCIES') return 'Документ не можна розпровести, оскільки від нього залежать інші документи.'
+    if (error.code === 'DOCUMENT_HAS_DEPENDENCIES') return 'Закупівлю не можна розпровести, оскільки на її основі вже створено повернення постачальнику або інший залежний документ.'
     if (error.code === 'DOCUMENT_NOT_DRAFT' || /Only a nondeleted DRAFT|Only a POSTED/.test(error.detail ?? '')) return 'Стан документа змінився. Оновіть дані перед дією.'
     if (error.code === 'INVALID_SOURCE_DOCUMENT') return 'Вихідний документ недоступний або має неприпустимий стан.'
   }

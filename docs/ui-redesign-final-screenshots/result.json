@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "Real cookie/CSRF login and isolated report/directory/admin fixtures",
+    "Seven reports, shared filters/KPI/CSV, below-cost data, stock tabs and neutral money/settlement signs",
+    "Shared directory/tree editor, real category save and markup update without changing BatchPrice",
+    "Users/roles split selection, real user edit and grouped permission update with direct routes retained",
+    "Audit server filters and read-only field-level old/new diff for the actual 25 → 35 price-type change",
+    "Mobile report tables/sheets, directory cards/editor dialog, user/role cards, permission accordions and audit drawer without page overflow",
+    "Zero unexpected console/network/page errors and warnings"
+  ],
+  "errors": [],
+  "warnings": [],
+  "expected": [
+    "Anonymous /auth/me = 401 before login"
+  ]
+}

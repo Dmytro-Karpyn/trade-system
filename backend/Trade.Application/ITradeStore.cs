@@ -68,6 +68,7 @@ public interface ITradeStore
     Task<IReadOnlyList<Unit>> ListUnitsAsync(Guid organizationId, CancellationToken cancellationToken);
     void AddUnit(Unit unit);
     Task<bool> IsForeignUnitAsync(Guid organizationId, Guid unitId, CancellationToken cancellationToken);
+    Task<bool> IsForeignCategoryAsync(Guid organizationId, Guid categoryId, CancellationToken cancellationToken);
     Task<IReadOnlyList<Product>> ListProductsAsync(Guid organizationId, CancellationToken cancellationToken, ProductFilter? filter = null);
     Task<bool> HasPurchaseLinesAsync(Guid productId, CancellationToken cancellationToken);
     Task<bool> HasSaleLinesAsync(Guid productId, CancellationToken cancellationToken);
@@ -77,6 +78,7 @@ public interface ITradeStore
     Task InitializeNewBatchPricesAsync(Guid organizationId, Guid[] newBatchIds, CancellationToken cancellationToken);
     Task<BatchPrice?> FindBatchPriceAsync(Guid batchId, Guid priceTypeId, CancellationToken cancellationToken);
     Task<ProductPrice?> FindProductPriceAsync(Guid productId, Guid priceTypeId, CancellationToken cancellationToken);
+    Task<IReadOnlyList<ProductPrice>> ListProductPricesAsync(Guid organizationId, Guid productId, CancellationToken cancellationToken);
     Task<IReadOnlyList<BatchPrice>> GetBatchPricesAsync(Guid[] batchIds, Guid priceTypeId, CancellationToken cancellationToken);
     Task<IReadOnlyList<ProductPrice>> GetProductPricesAsync(Guid[] productIds, Guid priceTypeId, CancellationToken cancellationToken);
     Task<IReadOnlyList<Product>> LockProductsAsync(Guid organizationId, Guid[] ids, CancellationToken cancellationToken);
@@ -97,8 +99,13 @@ public interface ITradeStore
     Task<IReadOnlyList<BatchReference>> LockBatchesAsync(Guid organizationId, Guid[] batchIds, CancellationToken cancellationToken);
     Task<IReadOnlyList<StockState>> GetStockAsync(Guid[] batchIds, Guid? excludeDocumentId, CancellationToken cancellationToken);
     Task<SaleInvoice?> FindSaleAsync(Guid organizationId, Guid id, bool forUpdate, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SaleListResponse>> ListSalesAsync(Guid organizationId, SaleFilter filter, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SaleProductResponse>> GetSaleProductsAsync(Guid organizationId, Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SaleBatchResponse>> GetSaleBatchesAsync(Guid organizationId, Guid id, CancellationToken cancellationToken);
+    Task<IReadOnlyList<SalePriceOption>> GetSalePriceOptionsAsync(Guid organizationId, Guid productId, Guid? priceTypeId, CancellationToken cancellationToken);
+    Task<SaleAmounts> GetSaleAmountsAsync(Guid organizationId, Guid id, CancellationToken cancellationToken);
     Task<IReadOnlyList<AvailableBatchResponse>> GetAvailableBatchesAsync(Guid organizationId, Guid productId,
-        Guid storageLocationId, CancellationToken cancellationToken);
+        Guid storageLocationId, CancellationToken cancellationToken, Guid? excludeSaleId = null);
     Task<IReadOnlyList<StockBalanceResponse>> GetBalancesAsync(Guid organizationId, Guid? storageLocationId,
         Guid? batchId, CancellationToken cancellationToken);
     void AddProduct(Product product);

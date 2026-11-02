@@ -6,6 +6,14 @@ namespace Trade.Application;
 
 public sealed class PricingService(ITradeStore store)
 {
+    public Task<IReadOnlyList<ProductPriceResponse>> ListProductPricesAsync(Guid organizationId, Guid productId, CancellationToken ct) =>
+        store.InTransactionAsync<IReadOnlyList<ProductPriceResponse>>(async token =>
+        {
+            await RequireServiceAsync(organizationId, productId, token);
+            return (await store.ListProductPricesAsync(organizationId, productId, token))
+                .Select(x => new ProductPriceResponse(x.ProductId, x.PriceTypeId, x.UnitPrice)).ToArray();
+        }, ct);
+
     public Task<PriceTypeResponse> CreateTypeAsync(Guid organizationId, PriceTypeRequest request, CancellationToken ct) =>
         store.InTransactionAsync(_ =>
         {

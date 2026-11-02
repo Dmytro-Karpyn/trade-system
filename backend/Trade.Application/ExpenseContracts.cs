@@ -28,7 +28,8 @@ public sealed record ExpenseResponse(DocumentResponse Document, Guid Counterpart
     Guid CurrencyId, decimal Amount, decimal ExchangeRate, Guid? PurchaseInvoiceId);
 
 public sealed record ExpenseFilter(DateOnly? From = null, DateOnly? To = null, Guid? CounterpartyId = null,
-    Guid? CategoryId = null, Guid? PurchaseInvoiceId = null, DocumentStatus? Status = null, Guid? CurrencyId = null);
+    Guid? CategoryId = null, Guid? PurchaseInvoiceId = null, DocumentStatus? Status = null, Guid? CurrencyId = null,
+    string? Search = null, bool? IsPurchaseExpense = null);
 
 internal static class ExpenseResponses
 {

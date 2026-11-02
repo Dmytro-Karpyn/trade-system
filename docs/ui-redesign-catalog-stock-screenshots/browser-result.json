@@ -1,0 +1,16 @@
+{
+  "checks": [
+    "Real cookie login, isolated fixtures and existing lookup APIs",
+    "Purchases split selection, DRAFT edit/save, POST/UNPOST, goods/expenses/prices tabs",
+    "Product split selection, SERVICE ProductPrice editor, GOODS stock/batches with no ProductPrice editor",
+    "Stock selected row/right panel, reservations, Batch panel/direct route, no Active/New Batch",
+    "Mobile bottom navigation/More, purchase/product/stock cards, filter sheets and direct details",
+    "Mobile Transfer/WriteOff line cards, Save/POST/UNPOST, sticky actions >=44px above navigation",
+    "Zero uncaught exceptions, unexpected console/network errors and warnings"
+  ],
+  "errors": [],
+  "warnings": [],
+  "expected": [
+    "Anonymous /auth/me = 401 before login"
+  ]
+}

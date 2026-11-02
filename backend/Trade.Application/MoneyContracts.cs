@@ -31,7 +31,7 @@ public sealed record MoneyDocumentResponse(DocumentResponse Document, MoneyPurpo
     Guid? SettlementCurrencyId, decimal? SettlementAmount, decimal? SettlementExchangeRate);
 public sealed record MoneyBalanceResponse(Guid MoneyAccountId, Guid CurrencyId, decimal Balance);
 
-internal static class MoneyResponses
+public static class MoneyResponses
 {
     public static MoneyAccountResponse ToResponse(this MoneyAccount x) => new(x.Id, x.OrganizationId, x.Name, x.AccountType, x.CurrencyId, x.Active);
 

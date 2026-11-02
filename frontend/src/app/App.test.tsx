@@ -24,6 +24,7 @@ function mount(path = '/', currentUser: CurrentUser = testUser, initiallyAuthent
     if (path === '/auth/me') return authenticated ? json(currentUser, meStatus) : json({}, 401)
     if (path === '/auth/login') { authenticated = true; return new Response(null, { status: 204 }) }
     if (path === '/auth/logout') { authenticated = false; return new Response(null, { status: 204 }) }
+    if (path.startsWith('/dashboard/summary')) return json({from:'2026-10-01',to:'2026-10-29',kpis:[],salesTrend:[],profitTrend:[],blocks:[],notes:[]})
     if (path === '/health') return json({ status: 'Healthy' })
     return json({}, 404)
   })
@@ -72,7 +73,7 @@ describe('authenticated application', () => {
   })
 
   it('hides unavailable menu items and shows allowed items', async () => {
-    mount('/', { ...testUser, permissions: ['product.view', 'stock.transfer', 'profit.view'] })
+    mount('/', { ...testUser, permissions: ['product.view', 'stock.transfer', 'reports.view'] })
     const menu = await screen.findByRole('navigation', { name: 'Основна навігація' })
     expect(within(menu).getByRole('link', { name: 'Товари' })).toBeVisible()
     expect(within(menu).getByRole('link', { name: 'Склад' })).toBeVisible()
@@ -156,12 +157,11 @@ describe('authenticated application', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/login')
   })
 
-  it('dashboard has honest empty metrics and makes no business-report requests', async () => {
+  it('dashboard uses its read endpoint and shows no invented values for an empty response', async () => {
     const { calls } = mount('/')
-    await screen.findByRole('heading', { name: 'Огляд діяльності' })
-    expect(screen.getAllByLabelText(/показник недоступний/)).toHaveLength(7)
-    expect(screen.getByRole('heading', { name: 'Операції поки не відображаються' })).toBeVisible()
-    expect(calls.every(call => ['/api/auth/me', '/api/health'].includes(call.path))).toBe(true)
+    expect(await screen.findByText('Немає доступних показників')).toBeVisible()
+    expect(screen.queryByText('125 000')).not.toBeInTheDocument()
+    expect(calls.some(call=>call.path.startsWith('/api/dashboard/summary?'))).toBe(true)
   })
 
   it('keeps the session when logout fails and shows a retryable error', async () => {
@@ -202,4 +202,40 @@ describe('authenticated application', () => {
     expect(screen.getByTestId('location')).toHaveTextContent('/login')
   })
 
+})
+
+describe('warm application shell', () => {
+  it('marks the active sidebar route and preserves links when collapsed', async () => {
+    mount('/')
+    const nav = await screen.findByRole('navigation', { name: 'Основна навігація' })
+    expect(within(nav).getByRole('link', { name: 'Головна' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).getByRole('link', { name: 'Товари' })).not.toHaveAttribute('aria-current')
+    await userEvent.click(screen.getByRole('button', { name: 'Згорнути бічну панель' }))
+    expect(screen.getByRole('button', { name: 'Розгорнути бічну панель' })).toBeVisible()
+    expect(within(nav).getByRole('link', { name: 'Товари' })).toHaveAttribute('href', '/products')
+    expect(within(nav).getByRole('link', { name: 'Головна' })).toHaveAttribute('aria-current', 'page')
+    await userEvent.click(screen.getByRole('button', { name: 'Розгорнути бічну панель' }))
+    expect(within(nav).getByText('Робочий простір', { selector: 'p' })).toBeVisible()
+  })
+  it('shows a permissions-aware mobile bottom navigation and More drawer', async () => {
+    setViewport(390)
+    mount('/', { ...testUser, permissions: ['sale.view', 'stock.view', 'product.view'] })
+    const nav = await screen.findByRole('navigation', { name: 'Мобільна навігація' })
+    expect(within(nav).getByRole('link', { name: 'Головна' })).toHaveAttribute('aria-current', 'page')
+    expect(within(nav).getByRole('link', { name: 'Продажі' })).toBeVisible()
+    expect(within(nav).getByRole('link', { name: 'Склад' })).toBeVisible()
+    expect(within(nav).queryByRole('link', { name: 'Гроші' })).not.toBeInTheDocument()
+    await userEvent.click(within(nav).getByRole('button', { name: 'Ще — відкрити решту меню' }))
+    const more = await screen.findByRole('navigation', { name: 'Основна навігація' })
+    expect(within(more).getByRole('link', { name: 'Товари' })).toBeVisible()
+    expect(within(more).queryByRole('link', { name: 'Продажі' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Закрити меню' }))
+    await waitFor(() => expect(screen.queryByRole('navigation', { name: 'Основна навігація' })).not.toBeInTheDocument())
+    expect(screen.getByRole('navigation', { name: 'Мобільна навігація' })).toBeVisible()
+  })
+  it('keeps desktop free of mobile bottom navigation', async () => {
+    mount('/')
+    await screen.findByRole('navigation', { name: 'Основна навігація' })
+    expect(screen.queryByRole('navigation', { name: 'Мобільна навігація' })).not.toBeInTheDocument()
+  })
 })

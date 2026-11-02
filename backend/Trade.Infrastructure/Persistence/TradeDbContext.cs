@@ -13,11 +13,15 @@ using Trade.Domain.Money;
 using Microsoft.AspNetCore.Identity;
 using Trade.Infrastructure.Authentication;
 using Trade.Domain.Common;
+using Trade.Application;
 
 namespace Trade.Infrastructure.Persistence;
 
-public sealed class TradeDbContext(DbContextOptions<TradeDbContext> options) : DbContext(options)
+public sealed partial class TradeDbContext(DbContextOptions<TradeDbContext> options,IAuditContext? auditContext=null) : DbContext(options)
 {
+    private readonly IAuditContext? audit = auditContext;
+    public DbSet<ProductCategory> ProductCategories => Set<ProductCategory>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
     public DbSet<TradeUser> Users => Set<TradeUser>();
     public DbSet<TradeRole> Roles => Set<TradeRole>();
     public DbSet<IdentityUserRole<Guid>> UserRoles => Set<IdentityUserRole<Guid>>();
@@ -60,12 +64,14 @@ public sealed class TradeDbContext(DbContextOptions<TradeDbContext> options) : D
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         ValidateCounterpartyDeletes();
+        PrepareAudit();
         return base.SaveChanges(acceptAllChangesOnSuccess);
     }
 
     public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         ValidateCounterpartyDeletes();
+        PrepareAudit();
         return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
@@ -79,6 +85,7 @@ public sealed class TradeDbContext(DbContextOptions<TradeDbContext> options) : D
 
     protected override void OnModelCreating(ModelBuilder model)
     {
+        ConfigureDirectoriesAndAudit(model);
         model.ConfigureIdentity();
         model.ConfigureMoney();
         model.ConfigureExpenses();

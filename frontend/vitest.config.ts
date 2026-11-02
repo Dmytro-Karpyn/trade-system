@@ -8,6 +8,9 @@ export default defineConfig({
     setupFiles: ['./src/test/setup.ts'],
     restoreMocks: true,
     clearMocks: true,
+    // Full MUI application tests also run beside PostgreSQL containers in CI.
+    // Bound worker concurrency instead of relaxing render/assertion timeouts.
+    maxWorkers: 1,
     include: ['src/**/*.test.{ts,tsx}'],
   },
 })

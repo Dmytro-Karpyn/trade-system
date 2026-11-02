@@ -21,11 +21,19 @@ public static class DependencyInjection
 
         services.AddHealthChecks().AddCheck<DatabaseHealthCheck>("postgresql");
         services.AddScoped<ITradeStore, EfTradeStore>();
+        services.AddScoped<IStockQueries, StockQueries>();
+        services.AddScoped<IFinanceQueries, FinanceQueries>();
+        services.AddScoped<IExpenseQueries, ExpenseQueries>();
+        services.AddScoped<IReturnQueries, ReturnQueries>();
+        services.AddScoped<IReportQueries, ReportQueries>();
+        services.AddScoped<IDirectoryManagement, DirectoryManagement>();
+        services.AddScoped<IAuditQueries, AuditQueries>();
         services.AddScoped<ProductService>();
         services.AddScoped<UnitService>();
         services.AddScoped<PurchaseService>();
         services.AddScoped<PurchaseQueryService>();
         services.AddScoped<SaleService>();
+        services.AddScoped<SaleQueryService>();
         services.AddScoped<PricingService>();
         services.AddScoped<CounterpartyService>();
         services.AddScoped<SettlementService>();

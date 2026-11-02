@@ -24,11 +24,13 @@ public sealed record SaleLineResponse(Guid Id, Guid SaleInvoiceId, int LineNo, G
     decimal Quantity, decimal RecommendedUnitPrice, decimal UnitPrice, DateTimeOffset? RemovedAt);
 
 public sealed record SaleResponse(DocumentResponse Document, Guid CounterpartyId, Guid StorageLocationId,
-    Guid? PriceTypeId, decimal DiscountPercent, IReadOnlyList<SaleLineResponse> Lines);
+    Guid? PriceTypeId, decimal DiscountPercent, IReadOnlyList<SaleLineResponse> Lines,
+    IReadOnlyList<SaleProductResponse>? Products = null, IReadOnlyList<SaleBatchResponse>? Batches = null,
+    string? PostedByName = null, string? CounterpartyName = null);
 
 public sealed record AvailableBatchResponse(Guid BatchId, Guid ProductId, Guid StorageLocationId,
     decimal PhysicalQuantity, decimal ReservedQuantity, decimal AvailableQuantity,
-    DateOnly PurchaseDocumentDate, string BatchNumber);
+    DateOnly PurchaseDocumentDate, string BatchNumber, decimal OwnReservedQuantity = 0m, decimal? AvailableForDocument = null);
 
 public sealed record BatchReference(Guid BatchId, Guid ProductId);
 

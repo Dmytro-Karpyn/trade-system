@@ -46,6 +46,6 @@ export function CounterpartyForm({ party, saved, cancel }: { party?: Counterpart
       </Box>
       {prices.permitted && prices.isError && <Alert severity="warning" sx={{ mt: 2 }} action={<Button onClick={() => { void prices.refetch() }}>Повторити</Button>}>Не вдалося завантажити типи цін. Поточне значення буде збережено.</Alert>}
     </Box>
-    <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'flex-end', p: 2.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: '#fafbfd' }}><Button color="inherit" onClick={cancel} disabled={save.isPending}>Скасувати</Button><Button variant="contained" type="submit" disabled={save.isPending}>{save.isPending ? 'Зберігаємо…' : party ? 'Зберегти зміни' : 'Створити контрагента'}</Button></Stack>
+    <Stack direction="row" spacing={1.5} sx={{ justifyContent: 'flex-end', p: 2.5, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'background.default' }}><Button color="inherit" onClick={cancel} disabled={save.isPending}>Скасувати</Button><Button variant="contained" type="submit" disabled={save.isPending}>{save.isPending ? 'Зберігаємо…' : party ? 'Зберегти зміни' : 'Створити контрагента'}</Button></Stack>
   </Paper>
 }

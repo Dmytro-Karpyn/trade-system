@@ -12,6 +12,7 @@ public static class AuthenticationEndpoints
 {
     public static void MapAuthenticationEndpoints(this IEndpointRouteBuilder app)
     {
+        app.MapGet("/admin/permissions",()=>PermissionCatalog.All).WithTags("Roles").RequireAuthorization("permission:roles.manage");
         var auth = app.MapGroup("/auth").WithTags("Authentication");
         auth.MapGet("/csrf", (HttpContext http, IAntiforgery antiforgery) =>
         {
@@ -20,14 +21,20 @@ public static class AuthenticationEndpoints
             return Results.Ok(new { RequestToken = tokens.RequestToken, HeaderName = tokens.HeaderName });
         }).AllowAnonymous();
         auth.MapPost("/login", async (LoginRequest input, HttpContext http, UserManager<TradeUser> users,
-            SignInManager<TradeUser> signIn) =>
+            SignInManager<TradeUser> signIn, ILoggerFactory loggerFactory) =>
         {
             http.Response.Headers.CacheControl = "no-store";
-            if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrEmpty(input.Password)) return Results.Unauthorized();
+            var logger = loggerFactory.CreateLogger("Trade.Authentication");
+            IResult Rejected()
+            {
+                logger.LogWarning("Login rejected: invalid credentials, inactive account or lockout");
+                return Results.Unauthorized();
+            }
+            if (string.IsNullOrWhiteSpace(input.Username) || string.IsNullOrEmpty(input.Password)) return Rejected();
             var user = await users.FindByNameAsync(input.Username.Trim());
-            if (user is null || !user.Active) return Results.Unauthorized();
+            if (user is null || !user.Active) return Rejected();
             var result = await signIn.CheckPasswordSignInAsync(user, input.Password, lockoutOnFailure: true);
-            if (!result.Succeeded) return Results.Unauthorized();
+            if (!result.Succeeded) return Rejected();
             user.LastLoginAt = DateTimeOffset.UtcNow;
             IdentityAdministration.RequireSuccess(await users.UpdateAsync(user));
             await signIn.SignInAsync(user, input.RememberMe);
@@ -51,6 +58,7 @@ public static class AuthenticationEndpoints
 
         var userApi = app.MapGroup("/admin/users").WithTags("Users").RequireAuthorization("permission:users.manage");
         userApi.MapGet("", (RequestContext c, IdentityAdministration s, CancellationToken ct) => s.ListUsersAsync(c.OrganizationId, ct));
+        userApi.MapGet("/lookups",(RequestContext c,IdentityAdministration s,CancellationToken ct)=>s.LookupsAsync(c.OrganizationId,ct));
         userApi.MapGet("/{id:guid}", (Guid id, RequestContext c, IdentityAdministration s, CancellationToken ct) => s.GetUserAsync(c.OrganizationId, id, ct));
         userApi.MapPost("", async (CreateUserRequest input, RequestContext c, IdentityAdministration s, CancellationToken ct) =>
         {

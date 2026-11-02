@@ -89,6 +89,14 @@ public sealed class MoneyService(ITradeStore store)
     public Task<IReadOnlyList<MoneyBalanceResponse>> BalancesAsync(Guid organizationId, CancellationToken ct) =>
         store.GetMoneyBalancesAsync(organizationId, ct);
 
+    public Task DeleteAsync(Guid organizationId, Guid actorId, Guid id, DocumentType type, CancellationToken ct) =>
+        store.InTransactionAsync(async token =>
+        {
+            var money = await FindAsync(organizationId, id, type, true, token);
+            money.Document.Delete(actorId, DateTimeOffset.UtcNow);
+            return true;
+        }, ct);
+
     private async Task<MoneyDocument> FindAsync(Guid organizationId, Guid id, DocumentType type, bool forUpdate, CancellationToken ct) =>
         await store.FindMoneyDocumentAsync(organizationId, id, type, forUpdate, ct) ?? throw new NotFoundException("Money document not found.");
 

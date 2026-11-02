@@ -21,11 +21,11 @@ export function useCounterparty(id: string) {
   const { api } = useAppServices()
   return useQuery({ queryKey: partyKeys.detail(id), queryFn: ({ signal }) => api.request(`/counterparties/${encodeURIComponent(id)}`, { signal, schema: counterpartySchema }) })
 }
-export function usePriceTypes() {
+export function usePriceTypes(enabled = true) {
   const { api } = useAppServices()
   const user = useCurrentUser().data
   const permitted = Boolean(user && hasAnyPermission(user, priceReadPermissions))
-  const query = useQuery({ queryKey: priceTypesKey, enabled: permitted, queryFn: ({ signal }) => api.request('/price-types', { signal, schema: z.array(priceTypeSchema) }) })
+  const query = useQuery({ queryKey: priceTypesKey, enabled: permitted && enabled, queryFn: ({ signal }) => api.request('/price-types', { signal, schema: z.array(priceTypeSchema) }) })
   // Do not expose cached lookup data to a role which no longer has permission to read it.
   return { ...query, data: permitted ? query.data : undefined, permitted }
 }

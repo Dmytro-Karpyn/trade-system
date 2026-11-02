@@ -248,3 +248,18 @@ describe('Counterparty UI', () => {
   })
 
 })
+
+describe('Counterparty UI consistency', () => {
+  it.each([390, 430])('uses shared mobile filters at %s px and preserves the customer filter', async width => {
+    setViewport(width); const app = setup()
+    await screen.findByRole('list', { name: 'Список контрагентів' })
+    expect(screen.queryByRole('combobox', { name: 'Ролі' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Фільтри' }))
+    const sheet = screen.getByRole('dialog', { name: 'Фільтри' })
+    expect(within(sheet).getByRole('textbox', { name: 'Пошук' })).toBeVisible()
+    await choose('Ролі', 'Покупці')
+    await userEvent.click(within(sheet).getByRole('button', { name: 'Показати результати' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(app.calls.some(call => call.path.includes('isCustomer=true'))).toBe(true)
+  })
+})

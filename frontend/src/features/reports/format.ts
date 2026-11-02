@@ -1,0 +1,8 @@
+import { currencyName,dateLabel,money } from '../purchases/contracts'
+import { operationNames } from '../counterparties/contracts'
+import { reportCurrencies } from './contracts'
+import type { Metric,ReportTable as Data } from './contracts'
+
+export function cellText(value:unknown,format:string,currencies:string[]):string { if(value===null||value===undefined) return '—'; if(format==='currency'&&typeof value==='string') return currencyName(value,currencies); if(typeof value==='number') return money(value)+(format==='percent'?'%':''); if(format==='date'&&typeof value==='string') return dateLabel(value); if(format==='documentType'&&typeof value==='string') return operationNames[value]??value; if(format==='status') return value==='POSTED'?'Проведено':'Чернетка'; if(typeof value==='boolean') return value?'Так':'Ні'; if(typeof value==='object'&&'min' in value&&'max' in value&&typeof value.min==='number'&&typeof value.max==='number') return value.min===value.max?money(value.min):`${money(value.min)} – ${money(value.max)}`; return typeof value==='string'?value:'—' }
+export function metricText(metric:Metric,currencies:string[]) { return money(metric.value)+(metric.currencyId?' '+currencyName(metric.currencyId,currencies):metric.format==='percent'?'%':'') }
+export function csvText(data:Data,currencies=reportCurrencies(data)) { const quote=(value:unknown)=>{const s=typeof value==='string'&&/^[\s]*[=+@-]/.test(value)?"'"+value:String(value??'');return '"'+s.replaceAll('"','""')+'"'};return '\ufeff'+[data.columns.map(c=>quote(c.label)).join(';'),...data.rows.map(r=>data.columns.map(c=>quote(typeof r[c.key]==='number'?r[c.key]:cellText(r[c.key],c.format,currencies))).join(';'))].join('\r\n') }

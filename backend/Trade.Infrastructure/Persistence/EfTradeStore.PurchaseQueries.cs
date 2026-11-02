@@ -37,7 +37,7 @@ internal sealed partial class EfTradeStore
     public async Task<PurchaseLookupsResponse> GetPurchaseLookupsAsync(Guid organizationId, CancellationToken ct)
     {
         var known = await db.StorageLocations.AsNoTracking().Where(x => x.OrganizationId == organizationId).OrderBy(x => x.Name)
-            .Select(x => new StorageLocationResponse(x.Id, x.Name)).ToListAsync(ct);
+            .Select(x => new StorageLocationResponse(x.Id, x.Name,x.Active)).ToListAsync(ct);
         var used = await db.PurchaseInvoices.Where(x => x.Document.OrganizationId == organizationId).Select(x => x.StorageLocationId)
             .Union(db.SaleInvoices.Where(x => x.Document.OrganizationId == organizationId).Select(x => x.StorageLocationId)).ToListAsync(ct);
         // External GUIDs used before the minimal directory remain selectable; do not invent real names.

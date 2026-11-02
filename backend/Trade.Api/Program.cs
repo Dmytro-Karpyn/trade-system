@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.HttpOverrides;
 using Trade.Api.Authentication;
+using Trade.Api.Operations;
+using Microsoft.AspNetCore.DataProtection;
 using Trade.Application;
 using Trade.Application.Authentication;
 using Trade.Infrastructure.Authentication;
@@ -15,11 +17,20 @@ using Trade.Api;
 using Trade.Infrastructure;
 using Trade.Infrastructure.Persistence;
 
+if (args.Contains("--health-check"))
+{
+    Environment.ExitCode = await ContainerHealth.CheckAsync();
+    return;
+}
+
 Log.Logger = new LoggerConfiguration().WriteTo.Console().CreateBootstrapLogger();
 
 try
 {
-    var builder = WebApplication.CreateBuilder(args.Where(x => x != "--migrate").ToArray());
+    if (args.Contains("--migrate") && args.Contains("--bootstrap-admin"))
+        throw new InvalidOperationException("Run migrations and admin bootstrap as separate explicit commands.");
+    var builder = WebApplication.CreateBuilder(args.Where(x => x is not "--migrate" and not "--bootstrap-admin").ToArray());
+    ProductionConfiguration.Validate(builder.Environment, builder.Configuration);
 
     builder.Services.AddSerilog((services, logger) => logger
         .ReadFrom.Configuration(builder.Configuration)
@@ -31,13 +42,18 @@ try
     {
         // Caddy terminates TLS. Only explicitly trusted proxies may supply the original scheme.
         options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+        options.ForwardLimit = 1;
         foreach (var network in builder.Configuration.GetSection("ReverseProxy:KnownNetworks").Get<string[]>() ?? [])
             options.KnownIPNetworks.Add(System.Net.IPNetwork.Parse(network));
     });
+    var protection = builder.Services.AddDataProtection().SetApplicationName("trade-system");
+    if (builder.Configuration["DataProtection:KeysPath"] is { Length: > 0 } keysPath)
+        protection.PersistKeysToFileSystem(new DirectoryInfo(keysPath));
     builder.Services.AddProblemDetails();
     builder.Services.AddExceptionHandler<TradeExceptionHandler>();
     builder.Services.AddHttpContextAccessor();
     builder.Services.AddScoped<RequestContext>();
+    builder.Services.AddScoped<IAuditContext>(services=>services.GetRequiredService<RequestContext>());
     builder.Services.ConfigureHttpJsonOptions(options =>
     {
         options.SerializerOptions.Converters.Add(new JsonStringEnumConverter(allowIntegerValues: false));
@@ -71,6 +87,8 @@ try
     builder.Services.ConfigureApplicationCookie(options =>
     {
         options.Cookie.Name = "trade.auth";
+        options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.SlidingExpiration = true;
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
@@ -99,6 +117,13 @@ try
     });
 
     var app = builder.Build();
+    if (args.Contains("--bootstrap-admin"))
+    {
+        await using var scope = app.Services.CreateAsyncScope();
+        await ProductionAdminBootstrap.RunAsync(scope.ServiceProvider, app.Environment, app.Configuration);
+        Log.Information("Administrator bootstrap completed; no HTTP listener was started");
+        return;
+    }
     if (args.Contains("--migrate"))
     {
         await using var scope = app.Services.CreateAsyncScope();
@@ -110,8 +135,11 @@ try
     await using (var scope = app.Services.CreateAsyncScope())
         await DevelopmentIdentitySeed.RunAsync(scope.ServiceProvider, app.Environment, app.Configuration);
     app.UseForwardedHeaders();
-    app.UseSerilogRequestLogging();
+    app.UseSerilogRequestLogging(options => options.GetLevel = (http, _, exception) =>
+        exception is not null || http.Response.StatusCode >= 500 ? Serilog.Events.LogEventLevel.Error :
+        http.Request.Path == "/health" && http.Response.StatusCode == 200 ? Serilog.Events.LogEventLevel.Debug : Serilog.Events.LogEventLevel.Information);
     app.UseExceptionHandler();
+    app.UseStatusCodePages(async status => await Results.Problem(statusCode: status.HttpContext.Response.StatusCode).ExecuteAsync(status.HttpContext));
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi().AllowAnonymous();
@@ -157,6 +185,7 @@ try
     ((IEndpointConventionBuilder)business).Add(BusinessAuthorization.Apply);
     business.MapTradeEndpoints();
     business.MapUnitEndpoints();
+    business.MapDirectoryEndpoints();
     business.MapSaleEndpoints();
     business.MapPricingEndpoints();
     business.MapSettlementEndpoints();
@@ -165,6 +194,8 @@ try
     business.MapCustomerReturnEndpoints();
     business.MapSupplierReturnEndpoints();
     business.MapStockTransferEndpoints();
+    business.MapStockQueryEndpoints();
+    business.MapReportEndpoints();
     business.MapWriteOffEndpoints();
     business.MapCostEndpoints();
 

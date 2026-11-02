@@ -7,6 +7,16 @@ public static class CustomerReturnEndpoints
     public static void MapCustomerReturnEndpoints(this IEndpointRouteBuilder app)
     {
         var returns = app.MapGroup("/customer-returns").WithTags("Customer returns");
+        returns.MapGet("/lookups", async (RequestContext context, IReturnQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.LookupsAsync(context.OrganizationId, false, ct))).Produces<ReturnLookups>();
+        returns.MapGet("/overview", async (DateOnly? from, DateOnly? to, Guid? counterpartyId, Trade.Domain.Documents.DocumentStatus? status,
+            Guid? sourceSaleInvoiceId, RequestContext context, IReturnQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.ListAsync(context.OrganizationId, false, new(from, to, counterpartyId, status, sourceSaleInvoiceId), ct)))
+            .Produces<IReadOnlyList<ReturnListItem>>();
+        returns.MapPost("/preview", async (CustomerReturnRequest request, RequestContext context, CustomerReturnService service, CancellationToken ct) =>
+            Results.Ok(await service.PreviewAsync(context.OrganizationId, context.ActorId, request, ct))).Produces<ReturnPreview>();
+        returns.MapGet("/{id:guid}/refund", async (Guid id, RequestContext context, IReturnQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.CustomerRefundAsync(context.OrganizationId, id, ct))).Produces<ReturnPreview>();
         returns.MapPost("", async (CustomerReturnRequest request, RequestContext context, CustomerReturnService service, CancellationToken ct) =>
         {
             var result = await service.CreateAsync(context.OrganizationId, context.ActorId, request, ct);

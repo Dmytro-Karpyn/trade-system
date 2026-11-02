@@ -34,6 +34,10 @@ public static class PricingEndpoints
             return Results.Ok(await service.SetBatchPriceAsync(context.OrganizationId, batchId, priceTypeId, request, ct));
         }).WithTags("Pricing").Produces<BatchPriceResponse>();
 
+        app.MapGet("/products/{productId:guid}/prices", async (Guid productId, RequestContext context, PricingService service, CancellationToken ct) =>
+            Results.Ok(await service.ListProductPricesAsync(context.OrganizationId, productId, ct)))
+            .WithTags("Pricing").Produces<IReadOnlyList<ProductPriceResponse>>();
+
         app.MapGet("/products/{productId:guid}/prices/{priceTypeId:guid}", async (Guid productId, Guid priceTypeId,
             RequestContext context, PricingService service, CancellationToken ct) =>
             Results.Ok(await service.GetProductPriceAsync(context.OrganizationId, productId, priceTypeId, ct)))

@@ -37,6 +37,7 @@ internal sealed partial class EfTradeStore(TradeDbContext db) : ITradeStore
 
     public Task<bool> IsForeignUnitAsync(Guid organizationId, Guid unitId, CancellationToken cancellationToken) =>
         db.Units.AnyAsync(x => x.Id == unitId && x.OrganizationId != organizationId, cancellationToken);
+    public Task<bool> IsForeignCategoryAsync(Guid organizationId,Guid categoryId,CancellationToken ct)=>db.ProductCategories.AnyAsync(x=>x.Id==categoryId&&x.OrganizationId!=organizationId,ct);
 
     public async Task<IReadOnlyList<Product>> ListProductsAsync(Guid organizationId, CancellationToken cancellationToken, ProductFilter? filter = null)
     {
@@ -116,6 +117,11 @@ internal sealed partial class EfTradeStore(TradeDbContext db) : ITradeStore
 
     public Task<ProductPrice?> FindProductPriceAsync(Guid productId, Guid priceTypeId, CancellationToken ct) =>
         db.ProductPrices.SingleOrDefaultAsync(x => x.ProductId == productId && x.PriceTypeId == priceTypeId, ct);
+
+    public async Task<IReadOnlyList<ProductPrice>> ListProductPricesAsync(Guid organizationId, Guid productId, CancellationToken ct) =>
+        await (from price in db.ProductPrices.AsNoTracking() join type in db.PriceTypes on price.PriceTypeId equals type.Id
+               where price.ProductId == productId && type.OrganizationId == organizationId
+               orderby type.SortOrder, type.Name, type.Id select price).ToListAsync(ct);
 
     public async Task<IReadOnlyList<BatchPrice>> GetBatchPricesAsync(Guid[] batchIds, Guid priceTypeId, CancellationToken ct) =>
         await db.BatchPrices.AsNoTracking().Where(x => batchIds.Contains(x.BatchId) && x.PriceTypeId == priceTypeId).ToListAsync(ct);
@@ -271,18 +277,23 @@ internal sealed partial class EfTradeStore(TradeDbContext db) : ITradeStore
     }
 
     public async Task<IReadOnlyList<AvailableBatchResponse>> GetAvailableBatchesAsync(Guid organizationId,
-        Guid productId, Guid storageLocationId, CancellationToken cancellationToken) =>
+        Guid productId, Guid storageLocationId, CancellationToken cancellationToken, Guid? excludeSaleId = null) =>
         await (from balance in db.StockBalances
                join batch in db.Batches on balance.BatchId equals batch.Id
                join line in db.PurchaseInvoiceLines on batch.PurchaseInvoiceLineId equals line.Id
                join purchase in db.PurchaseInvoices on line.PurchaseInvoiceId equals purchase.DocumentId
                join product in db.Products on line.ProductId equals product.Id
+               let own = db.SaleInvoiceLines.Where(l => l.SaleInvoiceId == excludeSaleId && l.BatchId == batch.Id && l.RemovedAt == null
+                   && db.SaleInvoices.Any(s => s.DocumentId == l.SaleInvoiceId && s.StorageLocationId == storageLocationId
+                       && s.Document.OrganizationId == organizationId && s.Document.DeletedAt == null && s.Document.Status == DocumentStatus.DRAFT))
+                   .Sum(l => l.Quantity)
                where purchase.Document.OrganizationId == organizationId && product.Id == productId
                    && product.ItemType == ItemType.GOODS && balance.StorageLocationId == storageLocationId
-                   && balance.AvailableQuantity > 0
+                   && balance.AvailableQuantity + own > 0
                orderby purchase.Document.DocumentDate, batch.CreatedAt, batch.Id
                select new AvailableBatchResponse(batch.Id, product.Id, balance.StorageLocationId, balance.PhysicalQuantity,
-                   balance.ReservedQuantity, balance.AvailableQuantity, purchase.Document.DocumentDate, batch.BatchNumber))
+                   balance.ReservedQuantity, balance.AvailableQuantity, purchase.Document.DocumentDate, batch.BatchNumber,
+                   own, excludeSaleId == null ? null : balance.AvailableQuantity + own))
             .ToListAsync(cancellationToken);
 
     public void AddProduct(Product product) => db.Products.Add(product);

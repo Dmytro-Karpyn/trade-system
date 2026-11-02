@@ -1,9 +1,13 @@
-import { QueryClient } from '@tanstack/react-query'
+import { MutationCache, QueryClient } from '@tanstack/react-query'
 import { ApiClient, ApiError } from '../api/client'
 import { currentUserKey } from '../auth/contracts'
 
 export function createAppServices(baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api') {
+  const mutationCache = new MutationCache({ onSuccess: async () => {
+    await Promise.all([['dashboard'], ['reports']].map(queryKey => queryClient.invalidateQueries({ queryKey })))
+  } })
   const queryClient = new QueryClient({
+    mutationCache,
     defaultOptions: {
       queries: {
         staleTime: 30_000,

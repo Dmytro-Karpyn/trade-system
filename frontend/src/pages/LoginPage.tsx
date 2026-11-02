@@ -35,18 +35,18 @@ export function LoginPage() {
     ? 'Не вдалося увійти. Перевірте логін і пароль. Якщо проблема повторюється, зверніться до адміністратора.'
     : login.error?.message
   return (
-    <Box sx={{ minHeight: '100dvh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(380px, 0.95fr) 1.05fr' }, bgcolor: '#fff' }}>
-      <Stack sx={{ display: { xs: 'none', md: 'flex' }, bgcolor: tokens.colors.sidebar, color: '#fff', p: { md: 5, xl: 7 }, position: 'relative', overflow: 'hidden', justifyContent: 'space-between', minHeight: '100dvh', '&::after': { content: '""', pointerEvents: 'none', position: 'absolute', inset: 0, background: 'radial-gradient(ellipse at 0% 85%, #224c8d55, transparent 60%)' } }}>
+    <Box sx={{ minHeight: '100dvh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(380px, 0.95fr) 1.05fr' }, bgcolor: 'background.paper' }}>
+      <Stack sx={{ display: { xs: 'none', md: 'flex' }, bgcolor: tokens.colors.sidebar, color: tokens.colors.surface, p: { md: 5, xl: 7 }, position: 'relative', overflow: 'hidden', justifyContent: 'space-between', minHeight: '100dvh', '&::after': { content: '""', pointerEvents: 'none', position: 'absolute', inset: 0, background: `radial-gradient(ellipse at 0% 85%, ${tokens.colors.primary}33, transparent 60%)` } }}>
         <Brand light />
         <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 490, py: 6 }}>
-          <Typography variant="overline" sx={{ color: '#89adf4' }}>ВАШ РОБОЧИЙ ПРОСТІР</Typography>
+          <Typography variant="overline" sx={{ color: tokens.colors.sidebarText }}>ВАШ РОБОЧИЙ ПРОСТІР</Typography>
           <Typography component="p" sx={{ mt: 2, mb: 3, fontSize: { md: 42, xl: 52 }, fontWeight: 650, letterSpacing: '-0.045em', lineHeight: 1.12 }}>Єдиний простір<br />для вашого бізнесу.</Typography>
-          <Typography sx={{ color: '#aebed5', maxWidth: 350, fontSize: 14, lineHeight: 1.8 }}>Керуйте торговими та складськими процесами в одному робочому просторі.</Typography>
+          <Typography sx={{ color: tokens.colors.sidebarText, maxWidth: 350, fontSize: 14, lineHeight: 1.8 }}>Керуйте торговими та складськими процесами в одному робочому просторі.</Typography>
           <Box aria-hidden="true" sx={{ mt: 5, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5 }}>
-            {([{ icon: 'box', label: 'Товари' }, { icon: 'stock', label: 'Склад' }, { icon: 'chart', label: 'Результат' }] as const).map(item => <Box key={item.label} sx={{ border: '1px solid #34496b', bgcolor: '#1b2d4966', borderRadius: 1.5, p: 2 }}><Icon name={item.icon} sx={{ color: '#8baded', fontSize: 25, mb: 1.5 }} /><Typography sx={{ color: '#c7d4e9', fontSize: 12 }}>{item.label}</Typography></Box>)}
+            {([{ icon: 'box', label: 'Товари' }, { icon: 'stock', label: 'Склад' }, { icon: 'chart', label: 'Результат' }] as const).map(item => <Box key={item.label} sx={{ border: `1px solid ${tokens.colors.sidebarHover}`, bgcolor: tokens.colors.sidebarHover, borderRadius: 1.5, p: 2 }}><Icon name={item.icon} sx={{ color: tokens.colors.sidebarText, fontSize: 25, mb: 1.5 }} /><Typography sx={{ color: tokens.colors.sidebarText, fontSize: 12 }}>{item.label}</Typography></Box>)}
           </Box>
         </Box>
-        <Typography variant="caption" sx={{ color: '#7185a5', position: 'relative', zIndex: 1 }}>Торгово-складська система</Typography>
+        <Typography variant="caption" sx={{ color: tokens.colors.sidebarText, position: 'relative', zIndex: 1 }}>Торгово-складська система</Typography>
       </Stack>
       <Stack sx={{ alignItems: 'center', justifyContent: 'center', p: { xs: 3, sm: 5 }, minHeight: '100dvh' }}>
         <Box sx={{ width: '100%', maxWidth: 380 }}>

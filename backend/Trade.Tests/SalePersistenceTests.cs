@@ -22,7 +22,7 @@ public sealed class SalePersistenceTests(DatabaseFixture fixture)
             "purchase_invoices", "sale_invoice_lines", "sale_invoices", "stock_movements", "price_types",
             "batch_prices", "product_prices", "counterparties", "settlement_movements", "money_accounts", "money_documents", "money_movements",
             "expense_categories", "expenses", "customer_returns", "customer_return_lines", "supplier_returns", "supplier_return_lines",
-            "stock_transfers", "stock_transfer_lines", "write_off_reasons", "write_offs", "write_off_lines", "users", "roles", "user_roles", "permissions", "role_permissions", "units", "storage_locations" }.Order(), tables.Order());
+            "stock_transfers", "stock_transfer_lines", "write_off_reasons", "write_offs", "write_off_lines", "users", "roles", "user_roles", "permissions", "role_permissions", "units", "storage_locations", "product_categories", "audit_logs" }.Order(), tables.Order());
         foreach (var (table, expected) in new[]
         {
             ("sale_invoices", new[] { "DocumentId", "CounterpartyId", "StorageLocationId", "PriceTypeId", "DiscountPercent" }),

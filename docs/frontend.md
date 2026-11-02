@@ -4,7 +4,7 @@ React 19 / TypeScript / Vite, MUI theme, TanStack Query, React Hook Form + Zod. 
 
 ## Сторінки
 
-`/login` — форма входу. `/` — dashboard shell із сімома порожніми фінансовими показниками та стрічкою операцій без вигаданих даних. Стан з’єднання читається з існуючого `/health`.
+`/login` — форма входу. `/` — робочий Dashboard із read API; правила показників та обмеження описані у [dashboard-reports.md](dashboard-reports.md). Стан з’єднання читається з існуючого `/health`.
 
 `/products`, `/products/new`, `/products/:id` — робочий CRUD номенклатури: [products-ui.md](products-ui.md).
 
@@ -12,7 +12,15 @@ React 19 / TypeScript / Vite, MUI theme, TanStack Query, React Hook Form + Zod. 
 
 `/purchases`, `/purchases/new`, `/purchases/:id` — список, DRAFT, POST/UNPOST, партії та ціни: [purchases-ui.md](purchases-ui.md).
 
-`/sales`, `/stock`, `/money`, `/expenses`, `/settlements`, `/reports`, `/directories`, `/admin` — placeholders відповідних розділів. Пряме відкриття або перезавантаження URL підтримується Vite та Caddy. `/forbidden` показує «Недостатньо прав»; невідомий URL — сторінку 404. Усі routes, крім `/login`, вимагають сесію.
+`/sales`, `/sales/new`, `/sales/:id` — список, GOODS/SERVICE, підбір партій, DRAFT, POST/UNPOST і поточні показники за правами: [sales-ui.md](sales-ui.md).
+
+`/stock`, `/stock/products/:productId`, `/stock/batches/:batchId`, `/stock/transfers[/new|/:id]`, `/stock/write-offs[/new|/:id]` — складські залишки, партії, рухи/резерви, переміщення та списання: [stock-ui.md](stock-ui.md).
+
+`/money`, `/money/accounts`, `/money/receipts[/new|/:id]`, `/money/payments[/new|/:id]`, `/money/transfers[/new|/:id]`, `/settlements`, `/settlements/:counterpartyId` — гроші та взаєморозрахунки: [money-settlements-ui.md](money-settlements-ui.md).
+
+`/expenses`, `/expenses/new`, `/expenses/:id`, `/expense-categories` — витрати, дерево категорій, current cost impact та передзаповнення виплати: [expenses-ui.md](expenses-ui.md).
+
+`/reports` — read-only звіти; `/directories` — спільні довідники; `/admin` — користувачі, ролі/права та аудит. Пряме відкриття або перезавантаження URL підтримується Vite та Caddy. `/forbidden` показує «Недостатньо прав»; невідомий URL — сторінку 404. Усі routes, крім `/login`, вимагають сесію.
 
 Layout: desktop sidebar від 1200 px, drawer для tablet/mobile, top bar з поточним розділом, disabled placeholders пошуку/створення та меню поточного користувача. Drawer закривається кнопкою, Escape, backdrop та після переходу. Mobile bottom navigation немає. Дизайн-токени та глобальні MUI налаштування — `src/theme/`.
 
@@ -45,7 +53,7 @@ Current user DTO перевіряється через Zod GUID, який під
 | Закупівлі | purchase.view |
 | Продажі | sale.view |
 | Склад | stock.view, stock.transfer, stock.writeoff |
-| Гроші | money.view |
+| Гроші | money.view, money.receipt, money.payment, money.transfer; без money.view тільки quick actions |
 | Витрати | expense.view |
 | Взаєморозрахунки | settlement.view |
 | Контрагенти | settlement.view, sale.view, purchase.view (відповідає backend GET) |
@@ -61,7 +69,7 @@ Secure antiforgery cookie потребує правильного original schem
 
 ## Запуск та перевірки
 
-Для входу потрібен backend admin, створений Development seed із паролем через `DevelopmentSeed__AdminPassword` (див. [authentication.md](authentication.md)). Production seed вимкнений. Frontend сам користувачів/ролей не створює.
+Для входу потрібен backend admin, створений Development seed із паролем через `DevelopmentSeed__AdminPassword` (див. [authentication.md](authentication.md)). Production seed вимкнений. Після входу users.manage/roles.manage дозволяють керувати користувачами та ролями через /admin; bootstrap першого користувача залишається backend seed.
 
 ```sh
 npm --prefix frontend ci
@@ -74,4 +82,12 @@ dotnet test backend/Trade.slnx --configuration Release
 
 Vitest + Testing Library + jsdom тестують повний React application із MemoryRouter, API responses та query cache: redirect/login/current user, permissions, 403, session expiry, logout, mobile drawer, validation та відсутність fake dashboard data. API client tests перевіряють cookies, CSRF renewal, помилки й cancellation-safe session flow. Залежності зафіксовані в package-lock.json.
 
-Реалізовано Product та Counterparty CRUD, вкладку взаєморозрахунків контрагента та Purchase UI з проведенням/розпроведенням; решта бізнес-CRUD, global search, quick-create logic, reports/admin UI та printed forms відкладені. `src/features/` містить відповідні вертикальні UI slices.
+Реалізовано Product та Counterparty CRUD, Purchase та Sale UI, Stock reads/операції, Money UI, unified settlements, Expenses/category tree та CustomerReturn/SupplierReturn UI. Також реалізовано Dashboard/Reports, довідники й Admin users/roles/audit. Global search, generic quick-create logic та printed forms відкладені. `src/features/` містить відповідні вертикальні UI slices.
+
+Повернення: [returns-ui.md](returns-ui.md) — шість маршрутів, створення з проведеної накладної, серверний refund preview, own-reserve availability та permissions на основі sale/purchase.
+
+Dashboard і Reports: [dashboard-reports.md](dashboard-reports.md) — реальні KPI/графіки, сім read-only reports, CSV, спеціалізовані права й централізована query invalidation.
+
+`/directories` та `/admin` — повноцінні довідники, користувачі, ролі/права й read-only аудит: [directories-admin.md](directories-admin.md). Категорії Product і Stock використовують спільне дерево.
+
+SERVICE ProductPrice editor, початкові ціни, missing-price UX у Sale та partial-save recovery: [service-pricing-ui.md](service-pricing-ui.md).

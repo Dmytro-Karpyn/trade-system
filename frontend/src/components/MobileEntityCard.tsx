@@ -1,0 +1,3 @@
+import { Box, Stack, Typography } from '@mui/material'
+import type { ReactNode } from 'react'
+export function MobileEntityCard({ title, status, children, amount }: { title: ReactNode; status: ReactNode; children: ReactNode; amount?: ReactNode }) { return <Box component="li" sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}><Stack direction="row" sx={{ justifyContent: 'space-between', gap: 1, alignItems: 'center', mb: 1 }}>{title}{status}</Stack>{children}{amount && <Typography variant="subtitle1" sx={{ mt: 1, fontVariantNumeric: 'tabular-nums' }}>{amount}</Typography>}</Box> }

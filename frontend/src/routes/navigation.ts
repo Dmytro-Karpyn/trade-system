@@ -13,15 +13,18 @@ export const navigation: readonly NavigationItem[] = [
   { path: '/purchases', title: 'Закупівлі', icon: 'purchase', group: 'Робочий простір', permissions: ['purchase.view'] },
   { path: '/sales', title: 'Продажі', icon: 'sale', group: 'Робочий простір', permissions: ['sale.view'] },
   { path: '/stock', title: 'Склад', icon: 'stock', group: 'Операції', permissions: ['stock.view', 'stock.transfer', 'stock.writeoff'] },
-  { path: '/money', title: 'Гроші', icon: 'wallet', group: 'Операції', permissions: ['money.view'] },
+  { path: '/money', title: 'Гроші', icon: 'wallet', group: 'Операції', permissions: ['money.view', 'money.receipt', 'money.payment', 'money.transfer'] },
   { path: '/expenses', title: 'Витрати', icon: 'expense', group: 'Операції', permissions: ['expense.view'] },
   { path: '/settlements', title: 'Взаєморозрахунки', icon: 'settlement', group: 'Операції', permissions: ['settlement.view'] },
   { path: '/counterparties', title: 'Контрагенти', icon: 'people', group: 'Операції', permissions: ['settlement.view', 'sale.view', 'purchase.view'] },
-  { path: '/reports', title: 'Звіти', icon: 'chart', group: 'Управління', permissions: ['reports.view', 'profit.view'] },
-  { path: '/directories', title: 'Довідники', icon: 'folder', group: 'Управління', permissions: ['settings.manage', 'product.view', 'sale.view', 'purchase.view', 'money.view', 'expense.view', 'stock.writeoff'] },
+  { path: '/reports', title: 'Звіти', icon: 'chart', group: 'Управління', permissions: ['reports.view'] },
+  { path: '/directories', title: 'Довідники', icon: 'folder', group: 'Управління', permissions: ['settings.manage', 'product.view', 'product.create', 'product.edit', 'sale.view', 'purchase.view', 'purchase.create', 'money.view', 'expense.view', 'expense.create', 'stock.view', 'stock.writeoff'] },
   { path: '/admin', title: 'Адміністрування', icon: 'settings', group: 'Управління', permissions: ['users.manage', 'roles.manage', 'settings.manage', 'audit.view'] },
 ]
 
 export function sectionTitle(pathname: string) {
+  if (pathname.startsWith('/customer-returns')) return 'Повернення покупців'
+  if (pathname.startsWith('/supplier-returns')) return 'Повернення постачальникам'
+  if (pathname === '/expense-categories') return 'Категорії витрат'
   return navigation.find(item => item.path === pathname || item.path !== '/' && pathname.startsWith(`${item.path}/`))?.title
 }

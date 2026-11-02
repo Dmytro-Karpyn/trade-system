@@ -1,0 +1,2109 @@
+{
+  "checks": [
+    "Real cookie/CSRF login and isolated fixtures for all business/admin modules",
+    "Desktop: 66 routes, headers, forms, statuses, named icons and no horizontal body overflow",
+    "Ten desktop split selections: keyboard, aria-selected, structural marker and shared detail headers",
+    "POST/UNPOST/delete confirmations remain bounded; keyboard skip link has visible focus",
+    "390×844 and 430×844: all primary modules, sheets/cards, ten sticky document/editor actions, More drawer and unclipped dialogs",
+    "Zero unexpected console/network/page errors and zero React/MUI warnings"
+  ],
+  "visited": [
+    {
+      "path": "/",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/01a191eb-9a8c-791a-9839-a9bfe71b44f1",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases/01a191eb-9880-709d-b8b4-d8c7fcfd02a8",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/products/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/products/01a191eb-97bc-79e1-a02e-d2f2c57d1698",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/products/01a191eb-97bc-79e1-a02e-d2f2c57d1698",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/batches/01a191eb-9970-7c40-99c9-686fbd9c6070",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/transfers",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/transfers/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/write-offs",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/write-offs/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/accounts",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/receipts",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/receipts/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/payments",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/payments/01a191eb-9ece-7c48-aeed-20fff12cb456",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/transfers",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/transfers/01a191eb-9eeb-70b4-9148-84dd6caeebcb",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/settlements",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/settlements/01a191eb-9786-7803-93ea-f9c827c9b4f9",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/sales",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/profitability",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/stock",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/purchases",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/money",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/expenses",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/settlements",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/units",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/price-types",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/storage-locations",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/write-off-reasons",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/currencies",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/expense-categories",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/audit",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/counterparties",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/counterparties/new",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/counterparties/01a191eb-9786-7803-93ea-f9c827c9b4f9",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/money/receipts",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/01a191eb-9a8c-791a-9839-a9bfe71b44f1",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "result": "passed"
+    },
+    {
+      "path": "/",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/sales",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/products",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/stock",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/money",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/settlements",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/sales",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/directories",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/audit",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/counterparties",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/audit",
+      "width": 390,
+      "result": "passed"
+    },
+    {
+      "path": "/",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/sales",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/products",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/stock",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/money",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/settlements",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/reports/sales",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/directories",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/audit",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/counterparties",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 430,
+      "result": "passed"
+    },
+    {
+      "path": "/admin/audit",
+      "width": 430,
+      "result": "passed"
+    }
+  ],
+  "contrastChecks": [
+    {
+      "path": "/sales",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/sales/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales/01a191eb-9a8c-791a-9839-a9bfe71b44f1",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/sales/01a191eb-9a8c-791a-9839-a9bfe71b44f1",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/purchases/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/01a191eb-9880-709d-b8b4-d8c7fcfd02a8",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/purchases/01a191eb-9880-709d-b8b4-d8c7fcfd02a8",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products/01a191eb-97bc-79e1-a02e-d2f2c57d1698",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products/01a191eb-97bc-79e1-a02e-d2f2c57d1698",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/products/01a191eb-97bc-79e1-a02e-d2f2c57d1698",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/stock/transfers",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/transfers/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/write-offs/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money/accounts",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/accounts",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money/accounts",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money/receipts",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/receipts/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/payments",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/payments",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/payments",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money/payments/01a191eb-9ece-7c48-aeed-20fff12cb456",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/payments/01a191eb-9ece-7c48-aeed-20fff12cb456",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/payments/01a191eb-9ece-7c48-aeed-20fff12cb456",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/transfers",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/transfers",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/transfers/01a191eb-9eeb-70b4-9148-84dd6caeebcb",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/transfers/01a191eb-9eeb-70b4-9148-84dd6caeebcb",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/transfers/01a191eb-9eeb-70b4-9148-84dd6caeebcb",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/expenses/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/units",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/units",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/price-types",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/price-types",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/storage-locations",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/storage-locations",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/storage-locations",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/write-off-reasons",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/write-off-reasons",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/expense-categories",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expense-categories",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/users/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 1440,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/counterparties",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/counterparties",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties/new",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/counterparties/01a191eb-9786-7803-93ea-f9c827c9b4f9",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties/01a191eb-9786-7803-93ea-f9c827c9b4f9",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money/receipts",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/expenses",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/users",
+      "width": 1440,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/directories/categories",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/sales/01a191eb-9a8c-791a-9839-a9bfe71b44f1",
+      "width": 1440,
+      "ratio": 6.62
+    },
+    {
+      "path": "/sales/01a191eb-9a8c-791a-9839-a9bfe71b44f1",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 1440,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/purchases",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/expenses",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/admin/users",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/users",
+      "width": 390,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/counterparties",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 390,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 390,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 390,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 390,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/purchases",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/money",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/expenses",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/admin/users",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/users",
+      "width": 430,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/counterparties",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/counterparties",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/sales/01a191eb-9b85-7901-8973-01fdea53500d",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/purchases/01a191eb-99d1-735a-a280-6d12b9f11060",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/expenses/01a191eb-9c2f-7261-b2b9-26cd767b3e28",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/money/receipts/01a191eb-9eab-7e2a-a0ed-fd3052e9af85",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/transfers/01a191eb-9d33-7a6e-a03b-ad333e6a1161",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/stock/write-offs/01a191eb-9d89-7c0e-b31d-46f0b71ef70e",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/customer-returns/01a191eb-9c9e-7958-8791-9d362a2e9361",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 430,
+      "ratio": 5.89
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/supplier-returns/01a191eb-9cec-7b43-99df-5fe201381d7e",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 430,
+      "ratio": 5.07
+    },
+    {
+      "path": "/admin/users/01a191eb-9fb5-7205-9647-17aa36986506",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/admin/roles/01a191eb-9f0a-7816-a976-d851328960c0",
+      "width": 430,
+      "ratio": 4.55
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 430,
+      "ratio": 6.62
+    },
+    {
+      "path": "/products/01a191eb-97f5-7f67-917b-4e36c0ebb612",
+      "width": 430,
+      "ratio": 4.55
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "expected": [
+    "Anonymous /auth/me = 401 before login"
+  ]
+}

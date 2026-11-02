@@ -13,8 +13,8 @@ public sealed record PurchaseBatchResponse(Guid BatchId, Guid PurchaseInvoiceLin
 public sealed record PurchaseBatchCostResponse(Guid BatchId, decimal UnitCostUah);
 public sealed record PurchaseBatchPriceResponse(Guid BatchId, Guid PriceTypeId, string PriceTypeName, decimal UnitPrice);
 public sealed record PurchaseLookupsResponse(IReadOnlyList<StorageLocationResponse> Locations, IReadOnlyList<Guid> CurrencyIds);
-public sealed record StorageLocationRequest(string Name);
-public sealed record StorageLocationResponse(Guid Id, string? Name);
+public sealed record StorageLocationRequest(string Name,bool Active=true);
+public sealed record StorageLocationResponse(Guid Id, string? Name,bool Active=true);
 
 // Read models only: totals/costs and lookup labels are never persisted with the document.
 public sealed class PurchaseQueryService(ITradeStore store)
@@ -44,8 +44,8 @@ public sealed class PurchaseQueryService(ITradeStore store)
     public Task<StorageLocationResponse> CreateLocationAsync(Guid organizationId, StorageLocationRequest request, CancellationToken ct) =>
         store.InTransactionAsync(_ =>
         {
-            var location = Trade.Domain.Inventory.StorageLocation.Create(organizationId, request.Name);
+            var location = Trade.Domain.Inventory.StorageLocation.Create(organizationId, request.Name,request.Active);
             store.AddStorageLocation(location);
-            return Task.FromResult(new StorageLocationResponse(location.Id, location.Name));
+            return Task.FromResult(new StorageLocationResponse(location.Id, location.Name,location.Active));
         }, ct);
 }

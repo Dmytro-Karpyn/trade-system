@@ -14,7 +14,8 @@ public sealed record SupplierReturnResponse(DocumentResponse Document, Guid Sour
 public sealed record SupplierReturnableLineResponse(Guid SourcePurchaseLineId, Guid ProductId, Guid BatchId,
     decimal PurchasedQuantity, decimal AlreadyReturnedQuantity, decimal RemainingReturnableByPurchase,
     decimal PhysicalQuantity, decimal ReservedQuantity, decimal AvailableQuantity, decimal MaxReturnableQuantity,
-    decimal OriginalUnitPriceCurrency, decimal OriginalDiscountPercent, Guid CurrencyId, decimal ExchangeRate);
+    decimal OriginalUnitPriceCurrency, decimal OriginalDiscountPercent, Guid CurrencyId, decimal ExchangeRate,
+    decimal AvailableForDocument = 0m);
 
 internal static class SupplierReturnResponses
 {

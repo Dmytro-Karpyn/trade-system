@@ -10,6 +10,19 @@ namespace Trade.Application;
 
 public sealed class CustomerReturnService(ITradeStore store)
 {
+    public Task<ReturnPreview> PreviewAsync(Guid organizationId, Guid actorId, CustomerReturnRequest request, CancellationToken ct) =>
+        store.InTransactionAsync(async token =>
+        {
+            var source = await SourceAsync(organizationId, request.SourceSaleInvoiceId, token);
+            await RequireLocationAsync(organizationId, request.StorageLocationId, token);
+            // Construct and validate in memory only; never add a document, movement, number or reservation.
+            var document = Document.Create(organizationId, DocumentType.CUSTOMER_RETURN, request.DocumentDate, request.Comment, request.InternalNote, actorId, DateTimeOffset.UtcNow);
+            var result = CustomerReturn.Create(document, source, request.StorageLocationId, RequireLines(request.Lines),
+                await ProductsAsync(organizationId, source, token), await TotalsAsync(source.DocumentId, token));
+            return new ReturnPreview(ReturnAmounts.Customer(result.Lines.Select(x => x.RefundAmount)),
+                result.Lines.Select(x => new ReturnPreviewLine(x.SourceSaleLineId, x.RefundAmount)).ToArray());
+        }, ct);
+
     public Task<CustomerReturnResponse> CreateAsync(Guid organizationId, Guid actorId, CustomerReturnRequest request, CancellationToken ct) =>
         store.InTransactionAsync(async token =>
         {

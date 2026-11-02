@@ -90,7 +90,7 @@ public sealed class PurchaseUiQueryTests(DatabaseFixture fixture)
         Assert.Equal(HttpStatusCode.BadRequest, (await api.Client.PostAsJsonAsync("/storage-locations", new StorageLocationRequest(" "), ApiTestHost.Json)).StatusCode);
         Assert.Equal(HttpStatusCode.Conflict, (await api.Client.PostAsJsonAsync("/storage-locations", new StorageLocationRequest("Основний"), ApiTestHost.Json)).StatusCode);
         var columns = await api.QueryAsync(db => db.Database.SqlQueryRaw<string>("""SELECT column_name AS "Value" FROM information_schema.columns WHERE table_name = 'storage_locations'""").ToArrayAsync());
-        Assert.Equal(new[] { "Id", "OrganizationId", "Name" }.Order(), columns.Order());
+        Assert.Equal(new[] { "Id", "OrganizationId", "Name", "Active" }.Order(), columns.Order());
         api.SetOrganization(Guid.NewGuid());
         Assert.Empty((await api.ReadAsync<PurchaseLookupsResponse>(await api.Client.GetAsync("/purchases/lookups"))).Locations);
         var product = await api.CreateProductAsync(); var party = await api.CreateCounterpartyAsync();

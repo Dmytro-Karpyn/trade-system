@@ -15,9 +15,10 @@ RUN dotnet publish backend/Trade.Api/Trade.Api.csproj -c Release --no-restore -o
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0.13 AS runtime
 WORKDIR /app
-RUN mkdir -p /home/app/.aspnet/DataProtection-Keys && chown -R app:app /home/app/.aspnet
+RUN mkdir -p /home/app/.aspnet/DataProtection-Keys && chown -R app:app /home/app/.aspnet && chmod 700 /home/app/.aspnet/DataProtection-Keys
 COPY --from=build /app/publish .
 USER app
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
+HEALTHCHECK --interval=20s --timeout=6s --start-period=20s --retries=3 CMD ["dotnet", "Trade.Api.dll", "--health-check"]
 ENTRYPOINT ["dotnet", "Trade.Api.dll"]

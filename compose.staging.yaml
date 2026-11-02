@@ -1,0 +1,30 @@
+# Always combine with compose.production.yaml. Separate project-scoped volumes/networks.
+name: trade-system-staging
+
+services:
+  postgres:
+    labels: {trade.environment: staging}
+  migrate:
+    labels: {trade.environment: staging}
+  api:
+    labels: {trade.environment: staging}
+  caddy:
+    labels: {trade.environment: staging}
+  bootstrap-admin:
+    labels: {trade.environment: staging}
+
+volumes:
+  postgres_data:
+    labels: {trade.environment: staging}
+  data_protection:
+    labels: {trade.environment: staging}
+  caddy_data:
+    labels: {trade.environment: staging}
+  caddy_config:
+    labels: {trade.environment: staging}
+
+networks:
+  database:
+    labels: {trade.environment: staging}
+  proxy:
+    labels: {trade.environment: staging}

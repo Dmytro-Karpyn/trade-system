@@ -14,12 +14,17 @@ const unit: Unit = { id: '019a073c-9ee5-7000-8000-000000000002', organizationId:
 const goods: Product = { id: '019a073c-9ee5-7000-8000-000000000003', organizationId: testUser.organizationId, categoryId: null, unitId: unit.id, itemType: 'GOODS', code: 'G-001', name: 'Дриль акумуляторний', barcode: '4820001234567', description: 'Компактний інструмент', attributes: { color: 'blue' }, active: true }
 const service: Product = { ...goods, id: '019a073c-9ee5-7000-8000-000000000004', code: 'S-001', name: 'Монтаж обладнання', itemType: 'SERVICE', barcode: null, attributes: null }
 const inactive: Product = { ...goods, id: '019a073c-9ee5-7000-8000-000000000005', code: 'G-002', name: 'Архівна позиція', active: false }
+const retail = { id: '019a073c-9ee5-7000-8000-000000000010', organizationId: testUser.organizationId, name: 'Роздрібна', defaultMarkupPercent: 25, active: true, sortOrder: 0 }
+const wholesale = { ...retail, id: '019a073c-9ee5-7000-8000-000000000011', name: 'Гуртова', sortOrder: 1 }
 const defaultPermissions = ['product.view', 'product.create', 'product.edit']
 const servicesToClean: ReturnType<typeof createAppServices>[] = []
 function Location() { return <span data-testid="route">{useLocation().pathname}</span> }
-interface SetupOptions { path?: string; permissions?: string[]; products?: Product[]; units?: Unit[]; pending?: boolean }
-function setup({ path = '/products', permissions = defaultPermissions, products = [goods, service, inactive], units = [unit], pending = false }: SetupOptions = {}) {
+interface SetupOptions { path?: string; permissions?: string[]; products?: Product[]; units?: Unit[]; pending?: boolean; priceTypes?: typeof retail[]; prices?: { productId: string; priceTypeId: string; unitPrice: number }[] }
+function setup({ path = '/products', permissions = defaultPermissions, products = [goods, service, inactive], units = [unit], pending = false, priceTypes = [], prices = [] }: SetupOptions = {}) {
   let items = [...products]
+  let typeItems = [...priceTypes]
+  let priceItems = [...prices]
+  let failedPriceType: string | undefined
   let unitItems = [...units]
   let listStatus = 200
   let saveError: { status: number; body: unknown } | undefined
@@ -31,6 +36,17 @@ function setup({ path = '/products', permissions = defaultPermissions, products 
     calls.push({ path: parsed.pathname + parsed.search, options })
     if (path === '/auth/me') return json({ ...testUser, permissions })
     if (path === '/auth/csrf') return json({ requestToken: 'token', headerName: 'X-CSRF-TOKEN' })
+    if (path === '/price-types') return json(typeItems)
+    if (/^\/products\/[^/]+\/prices$/.test(path)) return json(priceItems.filter(p => p.productId === path.split('/')[2]))
+    if (/^\/products\/[^/]+\/prices\/[^/]+$/.test(path) && options?.method === 'PUT') {
+      const [, , productId, , priceTypeId] = path.split('/')
+      if (priceTypeId === failedPriceType) return json({}, 503)
+      const value = { productId, priceTypeId, unitPrice: JSON.parse(options.body as string).unitPrice }
+      priceItems = [...priceItems.filter(p => !(p.productId === productId && p.priceTypeId === priceTypeId)), value]
+      return json(value)
+    }
+    if (path === '/categories') return json([])
+    if (path === `/stock/products/${goods.id}`) return json({ product: { id: goods.id, name: goods.name, code: goods.code, unit: unit.name, category: null, active: true }, balances: [{ productId: goods.id, productName: goods.name, code: goods.code, unit: unit.name, category: null, categoryId: null, storageLocationId: '019a073c-9ee5-7000-8000-000000000099', locationName: 'Основний склад', batchId: null, batchNumber: null, purchaseDocumentDate: null, supplier: null, physicalQuantity: 7, reservedQuantity: 2, availableQuantity: 5, retailPrice: null, wholesalePrice: null, currentUnitCost: null }], batches: [] })
     if (path === '/health') return json({ status: 'Healthy' })
     if (path === '/units') {
       if (options?.method === 'POST') {
@@ -67,7 +83,7 @@ function setup({ path = '/products', permissions = defaultPermissions, products 
   const services = createAppServices('/api'); servicesToClean.push(services)
   services.queryClient.setDefaultOptions({ queries: { retry: false, staleTime: 30_000 } })
   render(<AppProviders services={services}><MemoryRouter initialEntries={[path]}><App /><Location /></MemoryRouter></AppProviders>)
-  return { calls, services, release: () => pendingResolver?.(), setListStatus: (status: number) => { listStatus = status }, setSaveError: (status: number, body: unknown) => { saveError = { status, body } } }
+  return { calls, services, setPriceTypes: (types: typeof retail[]) => { typeItems = types }, failPrice: (id?: string) => { failedPriceType = id }, release: () => pendingResolver?.(), setListStatus: (status: number) => { listStatus = status }, setSaveError: (status: number, body: unknown) => { saveError = { status, body } } }
 }
 async function choose(label: string, option: string) {
   await userEvent.click(screen.getByRole('combobox', { name: label }))
@@ -245,5 +261,173 @@ describe('Product UI', () => {
     expect(await screen.findByRole('button', { name: 'Спробувати ще раз' })).toBeVisible()
     setListStatus(200); await userEvent.click(screen.getByRole('button', { name: 'Спробувати ще раз' }))
     expect(await screen.findByRole('link', { name: goods.name })).toBeVisible()
+  })
+})
+
+
+describe('SERVICE pricing UI', () => {
+  const permissions = [...defaultPermissions, 'settings.manage']
+  const options = { path: `/products/${service.id}`, permissions, priceTypes: [retail, wholesale] }
+  it('shows SERVICE prices for active types and leaves a missing price unset', async () => {
+    setup({ ...options, priceTypes: [retail, wholesale, { ...retail, id: '019a073c-9ee5-7000-8000-000000000012', name: 'Архівний', active: false }], prices: [{ productId: service.id, priceTypeId: retail.id, unitPrice: 300 }] })
+    const section = await screen.findByRole('region', { name: 'Ціни послуги' })
+    expect(await within(section).findByText('300,00 UAH')).toBeVisible()
+    expect(within(section).getByText('Гуртова')).toBeVisible(); expect(within(section).getByText('Не задано')).toBeVisible()
+    expect(within(section).queryByText('Архівний')).not.toBeInTheDocument()
+  })
+  it('keeps GOODS on BatchPrice and never loads ProductPrice', async () => {
+    const app = setup({ ...options, path: `/products/${goods.id}` })
+    expect(await screen.findByText('Ціни товару встановлюються окремо для кожної партії.')).toBeVisible()
+    expect(screen.queryByRole('region', { name: 'Ціни послуги' })).not.toBeInTheDocument()
+    expect(app.calls.some(c => c.path.includes('/prices'))).toBe(false)
+  })
+  it('creates a missing price using the existing upsert', async () => {
+    const app = setup(options)
+    await userEvent.click(await screen.findByRole('button', { name: 'Редагувати ціну Роздрібна' }))
+    await userEvent.type(screen.getByRole('spinbutton', { name: 'Ціна, UAH' }), '300')
+    await userEvent.click(screen.getByRole('button', { name: 'Зберегти ціну' }))
+    expect(await screen.findByText('300,00 UAH')).toBeVisible()
+    expect(JSON.parse(app.calls.find(c => c.options?.method === 'PUT')!.options?.body as string)).toEqual({ unitPrice: 300 })
+  })
+  it('updates an existing price without writing BatchPrice', async () => {
+    const app = setup({ ...options, prices: [{ productId: service.id, priceTypeId: retail.id, unitPrice: 300 }] })
+    await userEvent.click(await screen.findByRole('button', { name: 'Редагувати ціну Роздрібна' }))
+    const field = screen.getByRole('spinbutton', { name: 'Ціна, UAH' }); await userEvent.clear(field); await userEvent.type(field, '350')
+    await userEvent.click(screen.getByRole('button', { name: 'Зберегти ціну' }))
+    expect(await screen.findByText('350,00 UAH')).toBeVisible()
+    expect(app.calls.some(c => c.path.includes('/batches/'))).toBe(false)
+  })
+  it('rejects negative prices before submitting and accepts explicit zero', async () => {
+    const app = setup(options)
+    await userEvent.click(await screen.findByRole('button', { name: 'Редагувати ціну Роздрібна' }))
+    const field = screen.getByRole('spinbutton', { name: 'Ціна, UAH' }); await userEvent.type(field, '-1')
+    await userEvent.click(screen.getByRole('button', { name: 'Зберегти ціну' }))
+    expect(await screen.findByText('Ціна має бути невід’ємним числом.')).toBeVisible()
+    expect(app.calls.some(c => c.options?.method === 'PUT')).toBe(false)
+    await userEvent.clear(field); await userEvent.type(field, '0'); await userEvent.click(screen.getByRole('button', { name: 'Зберегти ціну' }))
+    expect(await screen.findByText('0,00 UAH')).toBeVisible()
+  })
+  it('does not grant pricing writes through product.edit', async () => {
+    setup({ ...options, permissions: defaultPermissions })
+    expect(await screen.findByRole('table', { name: 'Ціни послуги' })).toBeVisible()
+    expect(screen.queryByRole('button', { name: /Редагувати ціну/ })).not.toBeInTheDocument()
+  })
+  it('renders a newly created PriceType as unset without applying markup', async () => {
+    const app = setup({ ...options, priceTypes: [retail] })
+    await screen.findByRole('table', { name: 'Ціни послуги' })
+    app.setPriceTypes([retail, { ...wholesale, defaultMarkupPercent: 50 }])
+    await act(async () => { await app.services.queryClient.invalidateQueries({ queryKey: ['price-types'] }) })
+    expect(await screen.findByText('Гуртова')).toBeVisible()
+    expect(screen.getAllByText('Не задано')).toHaveLength(2)
+    expect(app.calls.some(c => c.options?.method === 'PUT')).toBe(false)
+  })
+  it('creates a SERVICE with initial prices after creating Product', async () => {
+    const app = setup({ ...options, path: '/products/new' })
+    await fillNew(); await choose('Тип *', 'Послуга')
+    await userEvent.type(await screen.findByRole('spinbutton', { name: 'Початкова ціна · Роздрібна' }), '300')
+    await userEvent.type(screen.getByRole('spinbutton', { name: 'Початкова ціна · Гуртова' }), '250')
+    await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    expect(await screen.findByText('300,00 UAH')).toBeVisible(); expect(screen.getByText('250,00 UAH')).toBeVisible()
+    expect(app.calls.filter(c => c.path === '/api/products' && c.options?.method === 'POST')).toHaveLength(1)
+    expect(app.calls.filter(c => c.options?.method === 'PUT')).toHaveLength(2)
+  })
+  it('retries only failed initial prices and never duplicates the created Product', async () => {
+    const app = setup({ ...options, path: '/products/new' }); app.failPrice(wholesale.id)
+    await fillNew(); await choose('Тип *', 'Послуга')
+    await userEvent.type(await screen.findByRole('spinbutton', { name: 'Початкова ціна · Роздрібна' }), '300')
+    await userEvent.type(screen.getByRole('spinbutton', { name: 'Початкова ціна · Гуртова' }), '250')
+    await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    expect(await screen.findByText(/Не вдалося зберегти ціни: Гуртова/)).toBeVisible()
+    expect(screen.getByRole('textbox', { name: 'Назва' })).toBeDisabled()
+    app.failPrice(); await userEvent.click(screen.getByRole('button', { name: 'Повторити незбережені ціни' }))
+    expect(await screen.findByText('250,00 UAH')).toBeVisible()
+    expect(app.calls.filter(c => c.path === '/api/products' && c.options?.method === 'POST')).toHaveLength(1)
+    expect(app.calls.filter(c => c.path.endsWith(retail.id) && c.options?.method === 'PUT')).toHaveLength(1)
+    expect(app.calls.filter(c => c.path.endsWith(wholesale.id) && c.options?.method === 'PUT')).toHaveLength(2)
+  })
+  it('leaves optional initial prices absent when blank', async () => {
+    const app = setup({ ...options, path: '/products/new' })
+    await fillNew(); await choose('Тип *', 'Послуга'); await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    expect(await screen.findByRole('heading', { name: 'Новий інструмент' })).toBeVisible()
+    expect(app.calls.some(c => c.options?.method === 'PUT')).toBe(false)
+  })
+  it('renders editable price cards on mobile without a wide table', async () => {
+    setViewport(390); setup(options)
+    expect(await screen.findByRole('list', { name: 'Ціни послуги' })).toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: 'Редагувати ціну Роздрібна' }))
+    expect(screen.getByRole('dialog')).toBeVisible()
+    expect(screen.queryByRole('table', { name: 'Ціни послуги' })).not.toBeInTheDocument()
+  })
+})
+
+describe('Product redesign', () => {
+  it('selects a Product without navigation and marks the selected row', async () => {
+    setup()
+    const table = await screen.findByRole('table', { name: 'Товари' })
+    const row = within(table).getByRole('row', { name: new RegExp(goods.code) })
+    row.focus()
+    await userEvent.keyboard('{Enter}')
+    expect(await screen.findByRole('region', { name: 'Вибрана номенклатура' })).toBeVisible()
+    expect(await screen.findByRole('heading', { name: goods.name })).toBeVisible()
+    expect(row).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByTestId('route')).toHaveTextContent(/^\/products$/)
+    expect(screen.getByRole('tab', { name: 'Залишки' })).toBeDisabled()
+    expect(screen.queryByRole('region', { name: 'Ціни послуги' })).not.toBeInTheDocument()
+  })
+  it('opens SERVICE prices in the selected detail and keeps missing prices unset', async () => {
+    setup({ priceTypes: [retail, wholesale], prices: [{ productId: service.id, priceTypeId: retail.id, unitPrice: 300 }] })
+    const table = await screen.findByRole('table', { name: 'Товари' })
+    await userEvent.click(within(table).getByRole('link', { name: service.name }))
+    const detail = await screen.findByRole('region', { name: 'Вибрана номенклатура' })
+    await userEvent.click(within(detail).getByRole('tab', { name: 'Ціни' }))
+    expect(await within(detail).findByText('300,00 UAH')).toBeVisible()
+    expect(within(detail).getByText('Не задано')).toBeVisible()
+    expect(within(detail).queryByRole('tab', { name: 'Партії' })).not.toBeInTheDocument()
+  })
+  it('has a mobile filter sheet and navigates from cards to direct detail', async () => {
+    setViewport(390)
+    setup()
+    const list = await screen.findByRole('list', { name: 'Список товарів' })
+    await userEvent.click(screen.getByRole('button', { name: 'Фільтри' }))
+    expect(await screen.findByRole('combobox', { name: 'Тип' })).toBeVisible()
+    await userEvent.click(screen.getByRole('button', { name: 'Показати результати' }))
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Фільтри' })).not.toBeInTheDocument())
+    await userEvent.click(within(list).getByRole('link', { name: goods.name }))
+    expect(await screen.findByRole('heading', { name: goods.name })).toBeVisible()
+    expect(screen.getByTestId('route')).toHaveTextContent('/products/' + goods.id)
+  })
+})
+
+it('shows GOODS stock summary cards on mobile through the existing stock API', async () => {
+  setViewport(390)
+  const app = setup({ path: '/products/' + goods.id, permissions: [...defaultPermissions, 'stock.view'] })
+  await userEvent.click(await screen.findByRole('tab', { name: 'Залишки' }))
+  expect(await screen.findByRole('list', { name: 'Складські залишки' })).toBeVisible()
+  expect(screen.getByText('Фізично: 7')).toBeVisible()
+  expect(screen.getByText('Доступно: 5')).toBeVisible()
+  expect(app.calls.some(call => call.path === '/api/stock/products/' + goods.id)).toBe(true)
+  expect(app.calls.some(call => call.path === `/api/products/${goods.id}/prices`)).toBe(false)
+  expect(screen.queryByRole('region', { name: 'Ціни послуги' })).not.toBeInTheDocument()
+})
+
+it('opens the general edit form when Edit is clicked from the Prices tab', async () => {
+  setup({ path: '/products/' + service.id, priceTypes: [retail] })
+  await userEvent.click(await screen.findByRole('tab', { name: 'Ціни' }))
+  await userEvent.click(screen.getByRole('button', { name: 'Редагувати' }))
+  expect(screen.getByRole('tab', { name: 'Загальне' })).toHaveAttribute('aria-selected', 'true')
+  expect(screen.getByRole('textbox', { name: 'Назва' })).toBeVisible()
+  expect(screen.getByRole('textbox', { name: 'Назва' })).toHaveValue(service.name)
+})
+
+describe('Service price UI consistency', () => {
+  it('uses UAH, preserves four decimal places and aligns the price column to the right', async () => {
+    setup({ path: '/products/' + service.id, priceTypes: [retail], prices: [{ productId: service.id, priceTypeId: retail.id, unitPrice: 300.1234 }] })
+    const table = await screen.findByRole('table', { name: 'Ціни послуги' })
+    expect(await within(table).findByRole('cell', { name: '300,1234 UAH' })).toHaveStyle({ textAlign: 'right' })
+    expect(within(table).getByRole('columnheader', { name: 'Поточна ціна' })).toHaveStyle({ textAlign: 'right' })
+  })
+  it('uses the shared empty state when there are no active price types', async () => {
+    setup({ path: '/products/' + service.id, priceTypes: [] })
+    expect(await screen.findByRole('heading', { name: 'Активних типів цін ще немає.' })).toBeVisible()
   })
 })

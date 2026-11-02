@@ -104,7 +104,7 @@ public sealed class SupplierReturnLifecycleTests(DatabaseFixture fixture)
         await api.CreateSupplierReturnAsync(stock.SupplierInput(1m));
         var line = stock.Purchase.Lines.Single();
         Assert.Equal(new SupplierReturnableLineResponse(line.Id, stock.ProductId, stock.BatchId, 10m, 5m, 5m,
-            5m, 1m, 4m, 4m, 10m, 0m, stock.Purchase.CurrencyId, 1m), Assert.Single(await api.SupplierReturnableAsync(stock.Purchase.Document.Id)));
+            5m, 1m, 4m, 4m, 10m, 0m, stock.Purchase.CurrencyId, 1m, 4m), Assert.Single(await api.SupplierReturnableAsync(stock.Purchase.Document.Id)));
         await ExpenseTestSupport.ErrorCodeAsync(await api.Client.PostAsJsonAsync("/supplier-returns", stock.SupplierInput(6m), ApiTestHost.Json),
             "RETURN_QUANTITY_EXCEEDED", HttpStatusCode.Conflict);
         var otherLocation = (await api.CreatePurchaseAsync()).StorageLocationId;

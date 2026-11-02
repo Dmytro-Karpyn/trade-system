@@ -1,0 +1,192 @@
+// Real cookie/API UI smoke. Run only against an isolated disposable dataset.
+import assert from 'node:assert/strict'
+import { mkdir, writeFile } from 'node:fs/promises'
+const { chromium } = await import(process.env.PLAYWRIGHT_MODULE_PATH ?? 'playwright-core')
+const base = process.env.AUDIT_BASE_URL ?? 'https://localhost:8445', password = process.env.AUDIT_ADMIN_PASSWORD
+assert.ok(password, 'Supply the isolated development seed password through env')
+const output = process.env.AUDIT_OUTPUT ?? '/tmp/trade-finance-redesign/artifacts'
+await mkdir(output, { recursive: true })
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH ?? '/usr/bin/chromium', args: ['--no-sandbox'] })
+const context = await browser.newContext({ ignoreHTTPSErrors: true, viewport: { width: 1440, height: 1050 }, timezoneId: 'Europe/Kyiv' })
+const page = await context.newPage(), errors = [], warnings = [], expected = [], checks = []
+page.on('pageerror', error => errors.push(error.message))
+page.on('console', message => {
+  if (message.type() === 'warning') warnings.push(message.text())
+  if (message.type() === 'error') {
+    if (message.location().url.includes('/auth/me') && message.text().includes('401')) expected.push('Anonymous /auth/me = 401 before login')
+    else errors.push(message.text() + ' ' + message.location().url)
+  }
+})
+page.on('requestfailed', request => { if (request.failure()?.errorText !== 'net::ERR_ABORTED') errors.push(request.url() + ': ' + request.failure()?.errorText) })
+async function api(path, data, method = data === undefined ? 'GET' : 'POST') {
+  let headers = {}
+  if (method !== 'GET') { const csrf = await (await context.request.get(base + '/api/auth/csrf')).json(); headers[csrf.headerName] = csrf.requestToken }
+  const response = await context.request.fetch(base + '/api' + path, { method, data, headers })
+  assert.ok(response.ok(), `${path}: ${response.status()} ${await response.text()}`)
+  return response.status() === 204 ? undefined : response.json()
+}
+function pass(message) { checks.push(message); console.log('PASS ' + message) }
+async function confirm(action) {
+  await page.getByRole('button', { name: action, exact: true }).click()
+  await page.getByRole('dialog').getByRole('button', { name: action, exact: true }).click()
+  await page.getByRole('dialog').waitFor({ state: 'hidden' })
+}
+async function shot(name) {
+  await page.screenshot({ path: `${output}/${name}.png`, animations: 'disabled' })
+  assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, 'Horizontal page overflow: ' + name)
+}
+async function filters() {
+  await page.getByRole('button', { name: 'Фільтри', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Фільтри', exact: true }).waitFor()
+  await page.getByRole('button', { name: 'Показати результати', exact: true }).click()
+  await page.getByRole('dialog', { name: 'Фільтри', exact: true }).waitFor({ state: 'hidden' })
+}
+async function sticky() {
+  await page.locator('#main-content').evaluate(async element => { await new Promise(requestAnimationFrame); element.scrollTop = element.scrollHeight; await new Promise(requestAnimationFrame) })
+  const button = await page.getByRole('button', { name: 'Зберегти', exact: true }).boundingBox(), nav = await page.getByRole('navigation', { name: 'Мобільна навігація' }).boundingBox()
+  assert.ok(button && nav && button.height >= 44 && button.y >= 64 && button.y + button.height <= nav.y + 1, 'Sticky actions must remain above bottom navigation')
+}
+try {
+  await page.goto(base + '/login')
+  await page.getByLabel('Логін', { exact: true }).fill('admin')
+  await page.getByLabel('Пароль', { exact: true }).fill(password)
+  await page.getByRole('button', { name: 'Увійти', exact: true }).click()
+  await page.getByRole('heading', { name: 'Огляд діяльності', exact: true }).waitFor()
+  const stamp = Date.now().toString().slice(-7), date = new Date().toISOString().slice(0, 10), uah = '00000000-0000-0000-0000-000000000980', foreignId = '11111111-1111-4111-8111-000000000840'
+  const unit = await api('/units', { name: 'шт ' + stamp }), location = await api('/storage-locations', { name: 'Основний ' + stamp }), retail = await api('/price-types', { name: 'Роздрібна ' + stamp, defaultMarkupPercent: 25 })
+  const buyer = await api('/counterparties', { name: 'Покупець ' + stamp, isCustomer: true }), supplier = await api('/counterparties', { name: 'Постачальник ' + stamp, isSupplier: true })
+  const goods = await api('/products', { unitId: unit.id, itemType: 'GOODS', code: 'G-' + stamp, name: 'Кашпо ' + stamp }), service = await api('/products', { unitId: unit.id, itemType: 'SERVICE', code: 'S-' + stamp, name: 'Оформлення ' + stamp })
+  await api(`/products/${service.id}/prices/${retail.id}`, { unitPrice: 300 }, 'PUT')
+  let purchase = await api('/purchases', { documentType: 'PURCHASE_INVOICE', documentDate: date, counterpartyId: supplier.id, storageLocationId: location.id, currencyId: uah, exchangeRate: 1, discountPercent: 10, lines: [{ lineNo: 1, productId: goods.id, quantity: 20, unitPriceCurrency: 100 }] })
+  purchase = await api(`/purchases/${purchase.document.id}/post`, {})
+  const [batch] = await api(`/purchases/${purchase.document.id}/batches`)
+  let sale = await api('/sales', { documentDate: date, counterpartyId: buyer.id, storageLocationId: location.id, priceTypeId: retail.id, discountPercent: 0, lines: [{ lineNo: 1, productId: goods.id, batchId: batch.batchId, quantity: 2 }, { lineNo: 2, productId: service.id, quantity: 1 }] })
+  sale = await api(`/sales/${sale.document.id}/post`, {})
+  const category = await api('/expense-categories', { name: 'Доставка ' + stamp })
+  const expense = await api('/expenses', { documentDate: date, counterpartyId: supplier.id, expenseCategoryId: category.id, currencyId: uah, amount: 100, exchangeRate: 1, purchaseInvoiceId: purchase.document.id })
+  const customerReturn = await api('/customer-returns', { documentDate: date, sourceSaleInvoiceId: sale.document.id, storageLocationId: location.id, lines: [{ sourceSaleLineId: sale.lines[0].id, quantity: 1 }, { sourceSaleLineId: sale.lines[1].id, quantity: 0, refundAmount: 50 }] })
+  const supplierReturn = await api('/supplier-returns', { documentDate: date, sourcePurchaseInvoiceId: purchase.document.id, storageLocationId: location.id, lines: [{ sourcePurchaseLineId: purchase.lines[0].id, quantity: 1 }] })
+  const cash = await api('/money/accounts', { name: 'Каса ' + stamp, accountType: 'CASH', currencyId: uah, active: true }), foreign = await api('/money/accounts', { name: 'Валютний ' + stamp, accountType: 'BANK', currencyId: foreignId, active: true })
+  const negative = await api('/money/payments', { documentDate: date, purpose: 'OWNER', sourceAccountId: cash.id, sourceAmount: 50 })
+  await api(`/money/payments/${negative.document.id}/post`, {})
+  const receipt = await api('/money/receipts', { documentDate: date, purpose: 'SETTLEMENT', destinationAccountId: cash.id, destinationAmount: 100, counterpartyId: buyer.id, settlementCurrencyId: uah, settlementAmount: 100, settlementExchangeRate: 1 })
+  const payment = await api('/money/payments', { documentDate: date, purpose: 'OWNER', sourceAccountId: cash.id, sourceAmount: 20 })
+  const transfer = await api('/money/transfers', { documentDate: date, sourceAccountId: cash.id, destinationAccountId: foreign.id, sourceAmount: 80, destinationAmount: 2 })
+  pass('Real login, existing APIs and isolated fixtures for all five modules')
+  // Reload after API fixtures to discard the pre-fixture dashboard query cache.
+  await page.goto(base + '/money')
+  await page.reload()
+  await page.getByRole('heading', { name: 'Загальний баланс', exact: true }).first().waitFor()
+  const dashboard = await api('/dashboard/summary?from=' + date.slice(0, 7) + '-01&to=' + date)
+  const cashMetric = dashboard.kpis.find(metric => metric.key === 'money' && metric.currencyId === uah)
+  assert.ok(cashMetric && cashMetric.value < 0, 'Backend total balance retains negative value')
+  const cashTotal = new Intl.NumberFormat('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(cashMetric.value).replace(/\s/g, ' ') + ' UAH'
+  await page.getByRole('heading', { name: 'Загальний баланс', exact: true }).locator('..').filter({ hasText: 'UAH' }).getByText(cashTotal, { exact: true }).waitFor()
+  const accounts = page.getByRole('list', { name: 'Грошові рахунки', exact: true })
+  await accounts.getByRole('heading', { name: cash.name, exact: true }).waitFor()
+  await accounts.getByRole('listitem').filter({ hasText: cash.name }).getByText('-50,00 UAH', { exact: true }).waitFor()
+  await shot('desktop-money')
+  pass('Money account cards and negative balance without blocking/warning')
+  for (const [kind, doc] of [['receipts', receipt], ['payments', payment], ['transfers', transfer]]) {
+    await page.goto(base + '/money/' + kind)
+    const table = page.getByRole('table', { name: 'Грошові документи', exact: true })
+    await table.getByRole('row').filter({ hasText: cash.name }).getByRole('link', { name: 'DRAFT', exact: true }).click()
+    const panel = page.getByRole('region', { name: 'Вибраний грошовий документ' })
+    await panel.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+    assert.equal(new URL(page.url()).pathname, '/money/' + kind)
+    assert.equal(await table.locator('tr[aria-selected="true"]').count(), 1)
+    if (kind === 'transfers') await panel.getByText(/Ефективний курс: 1 UAH = 0,025/).waitFor()
+    await panel.getByLabel('Коментар', { exact: true }).fill('UI smoke ' + stamp)
+    await panel.getByRole('button', { name: 'Зберегти', exact: true }).click()
+    await page.getByText('Чернетку збережено.', { exact: true }).waitFor()
+    await shot('desktop-' + kind)
+    await confirm('Провести')
+    await panel.getByRole('button', { name: 'Розпровести', exact: true }).waitFor()
+    assert.equal((await api(`/money/${kind}/${doc.document.id}`)).document.status, 'POSTED')
+    await confirm('Розпровести')
+    await panel.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+  }
+  pass('Receipt/payment/transfer split selection, Save/POST/UNPOST and derived cross-currency rate')
+  await page.goto(base + '/settlements')
+  const settlements = page.getByRole('table', { name: 'Баланси взаєморозрахунків', exact: true })
+  await settlements.getByRole('link', { name: buyer.name, exact: true }).click()
+  const party = page.getByRole('region', { name: 'Вибраний контрагент' })
+  await party.getByRole('table', { name: 'Рухи взаєморозрахунків', exact: true }).waitFor()
+  await party.getByRole('region', { name: 'Баланс UAH', exact: true }).waitFor()
+  assert.equal(new URL(page.url()).pathname, '/settlements')
+  await shot('desktop-settlements')
+  pass('Settlement selected counterparty, per-currency balances and backend running history')
+  await page.goto(base + '/expenses')
+  const expenses = page.getByRole('table', { name: 'Витрати', exact: true })
+  await expenses.getByRole('row').filter({ hasText: supplier.name }).getByRole('link', { name: 'DRAFT', exact: true }).click()
+  const expensePanel = page.getByRole('region', { name: 'Вибрана витрата' })
+  await expensePanel.getByText('Впливає на собівартість', { exact: true }).waitFor()
+  await expensePanel.getByRole('link', { name: purchase.document.number, exact: true }).first().waitFor()
+  await expensePanel.getByRole('heading', { name: 'Вплив на собівартість', exact: true }).waitFor()
+  await shot('desktop-expense')
+  await confirm('Провести')
+  await expensePanel.getByRole('button', { name: 'Розпровести', exact: true }).waitFor()
+  await confirm('Розпровести')
+  await expensePanel.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+  pass('Direct expense split selection, source purchase link, current cost data and POST/UNPOST')
+  for (const [kind, doc] of [['customer', customerReturn], ['supplier', supplierReturn]]) {
+    const root = '/' + kind + '-returns'
+    await page.goto(base + root)
+    const table = page.getByRole('table', { name: kind === 'customer' ? 'Повернення покупців' : 'Повернення постачальникам', exact: true })
+    await table.getByRole('row').filter({ hasText: kind === 'customer' ? buyer.name : supplier.name }).getByRole('link', { name: 'Чернетка', exact: true }).click()
+    const panel = page.getByRole('region', { name: 'Вибране повернення' })
+    await panel.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+    if (kind === 'customer') await panel.getByText('Послуга', { exact: true }).waitFor()
+    else await panel.getByText('Доступно до власного резерву', { exact: true }).waitFor()
+    await panel.getByText('Розрахунок…', { exact: false }).waitFor({ state: 'hidden' })
+    await shot('desktop-' + kind + '-return')
+    await confirm('Провести')
+    await panel.getByRole('button', { name: 'Розпровести', exact: true }).waitFor()
+    assert.equal((await api(root + '/' + doc.document.id)).document.status, 'POSTED')
+    await confirm('Розпровести')
+    await panel.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+  }
+  pass('Customer GOODS/SERVICE compensation and Supplier reserve/available, real POST/UNPOST')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.goto(base + '/money')
+  await page.getByRole('list', { name: 'Грошові рахунки', exact: true }).waitFor()
+  await shot('mobile-money')
+  await page.goto(base + '/money/receipts')
+  await page.getByRole('list', { name: 'Грошові документи', exact: true }).waitFor()
+  await filters()
+  await page.goto(base + '/money/receipts/' + receipt.document.id)
+  await page.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+  await sticky(); await shot('mobile-receipt')
+  await page.goto(base + '/settlements')
+  const cards = page.getByRole('list', { name: 'Баланси взаєморозрахунків', exact: true })
+  await cards.waitFor(); await filters(); await shot('mobile-settlements')
+  await cards.getByRole('link', { name: buyer.name, exact: true }).click()
+  await page.getByRole('list', { name: 'Рухи взаєморозрахунків', exact: true }).waitFor()
+  await shot('mobile-settlement-detail')
+  await page.goto(base + '/expenses')
+  await page.getByRole('list', { name: 'Витрати', exact: true }).waitFor()
+  await filters(); await shot('mobile-expenses')
+  await page.goto(base + '/expenses/' + expense.document.id)
+  await page.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+  await sticky(); await shot('mobile-expense-detail')
+  for (const [kind, doc] of [['customer', customerReturn], ['supplier', supplierReturn]]) {
+    await page.goto(base + '/' + kind + '-returns')
+    await page.getByRole('list', { name: kind === 'customer' ? 'Повернення покупців' : 'Повернення постачальникам', exact: true }).waitFor()
+    await filters()
+    await page.goto(base + '/' + kind + '-returns/' + doc.document.id)
+    await page.getByRole('list', { name: 'Рядки повернення', exact: true }).waitFor()
+    await page.getByRole('button', { name: 'Зберегти', exact: true }).waitFor()
+    await sticky(); await shot('mobile-' + kind + '-return')
+  }
+  pass('Mobile account/document/balance/expense/return cards, sheets and sticky actions above navigation')
+  assert.deepEqual(errors, [], 'Unexpected browser errors')
+  assert.deepEqual(warnings, [], 'Unexpected browser warnings')
+  pass('Zero unexpected console/network/page errors and warnings')
+} catch (error) {
+  await page.screenshot({ path: `${output}/failure.png` }).catch(() => {})
+  await writeFile(`${output}/failure.txt`, await page.locator('body').innerText()).catch(() => {})
+  throw error
+} finally {
+  await writeFile(`${output}/result.json`, JSON.stringify({ checks, errors, warnings, expected }, null, 2))
+  await browser.close()
+}

@@ -7,6 +7,18 @@ public static class SaleEndpoints
     public static void MapSaleEndpoints(this IEndpointRouteBuilder app)
     {
         var sales = app.MapGroup("/sales").WithTags("Sales");
+        sales.MapGet("", async (string? search, DateOnly? from, DateOnly? to, Guid? counterpartyId, Guid? storageLocationId,
+            Guid? priceTypeId, Trade.Domain.Documents.DocumentStatus? status, RequestContext context, SaleQueryService service, CancellationToken ct) =>
+            Results.Ok(await service.ListAsync(context.OrganizationId, new(search, from, to, counterpartyId, storageLocationId, priceTypeId, status), ct)))
+            .Produces<IReadOnlyList<SaleListResponse>>();
+        sales.MapGet("/lookups", async (RequestContext context, SaleQueryService service, CancellationToken ct) =>
+            Results.Ok(await service.LookupsAsync(context.OrganizationId, ct))).Produces<SaleLookupsResponse>();
+        sales.MapGet("/price-options", async (Guid productId, Guid? priceTypeId, RequestContext context, SaleQueryService service, CancellationToken ct) =>
+            Results.Ok(await service.PricesAsync(context.OrganizationId, productId, priceTypeId, ct))).Produces<IReadOnlyList<SalePriceOption>>();
+        sales.MapGet("/{id:guid}/cost", async (Guid id, RequestContext context, SaleQueryService service, CancellationToken ct) =>
+            Results.Ok(await service.CostAsync(context.OrganizationId, id, ct))).Produces<SaleCostResponse>();
+        sales.MapGet("/{id:guid}/profit", async (Guid id, RequestContext context, SaleQueryService service, CancellationToken ct) =>
+            Results.Ok(await service.ProfitAsync(context.OrganizationId, id, ct))).Produces<SaleProfitResponse>();
         sales.MapPost("", async (SaleRequest request, RequestContext context, SaleService service, CancellationToken ct) =>
         {
             var sale = await service.CreateAsync(context.OrganizationId, context.ActorId, request, ct);
@@ -33,9 +45,9 @@ public static class SaleEndpoints
             return Results.NoContent();
         }).Produces(204);
 
-        app.MapGet("/stock/available-batches", async (Guid productId, Guid storageLocationId,
+        app.MapGet("/stock/available-batches", async (Guid productId, Guid storageLocationId, Guid? excludeSaleId,
             RequestContext context, SaleService service, CancellationToken ct) =>
-            Results.Ok(await service.AvailableBatchesAsync(context.OrganizationId, productId, storageLocationId, ct)))
+            Results.Ok(await service.AvailableBatchesAsync(context.OrganizationId, productId, storageLocationId, ct, excludeSaleId)))
             .WithTags("Stock").Produces<IReadOnlyList<AvailableBatchResponse>>();
     }
 }

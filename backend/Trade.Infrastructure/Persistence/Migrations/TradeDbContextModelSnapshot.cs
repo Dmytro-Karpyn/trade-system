@@ -88,10 +88,54 @@ namespace Trade.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Trade.Domain.Catalog.ProductCategory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.HasIndex("OrganizationId", "ParentId", "Name")
+                        .IsUnique();
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("OrganizationId", "ParentId", "Name"), false);
+
+                    b.ToTable("product_categories", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_product_category_name", "btrim(\"Name\") <> ''");
+                        });
+                });
+
             modelBuilder.Entity("Trade.Domain.Catalog.Unit", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -428,6 +472,11 @@ namespace Trade.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
+
+                    b.Property<bool>("Active")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(true);
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -1359,6 +1408,56 @@ namespace Trade.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Trade.Infrastructure.Persistence.AuditEntry", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ActorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("DocumentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EntityId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("NewValues")
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OldValues")
+                        .HasColumnType("jsonb");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Summary")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OrganizationId", "DocumentId");
+
+                    b.HasIndex("OrganizationId", "ActorId", "OccurredAt");
+
+                    b.HasIndex("OrganizationId", "OccurredAt", "Id");
+
+                    b.ToTable("audit_logs", (string)null);
+                });
+
             modelBuilder.Entity("Trade.Infrastructure.Persistence.BatchCostRow", b =>
                 {
                     b.Property<Guid>("BatchId")
@@ -1445,6 +1544,14 @@ namespace Trade.Infrastructure.Persistence.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Trade.Domain.Catalog.ProductCategory", b =>
+                {
+                    b.HasOne("Trade.Domain.Catalog.ProductCategory", null)
+                        .WithMany()
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Trade.Domain.Counterparties.Counterparty", b =>

@@ -8,7 +8,10 @@ public sealed record CreateUserRequest(string Username, string Password, string 
 public sealed record UpdateUserRequest(string Username, string FullName = "", Guid? CounterpartyId = null,
     bool Active = true, IReadOnlyList<Guid>? RoleIds = null, string? Password = null);
 public sealed record UserResponse(Guid UserId, string Username, string FullName, Guid OrganizationId, Guid? CounterpartyId,
-    bool Active, DateTimeOffset? LastLoginAt, IReadOnlyList<Guid> RoleIds);
+    bool Active, DateTimeOffset? LastLoginAt, IReadOnlyList<Guid> RoleIds,IReadOnlyList<string>? RoleNames=null,string? CounterpartyName=null);
 public sealed record RoleRequest(string Name, bool Active = true);
 public sealed record RolePermissionsRequest(IReadOnlyList<string> PermissionCodes);
-public sealed record RoleResponse(Guid Id, Guid OrganizationId, string Name, bool Active, IReadOnlyList<string> Permissions);
+public sealed record RoleResponse(Guid Id, Guid OrganizationId, string Name, bool Active, IReadOnlyList<string> Permissions,int UserCount=0);
+public sealed record UserRoleOption(Guid Id,string Name,bool Active);
+public sealed record UserPartyOption(Guid Id,string Name,bool IsEmployee);
+public sealed record UserLookups(IReadOnlyList<UserRoleOption> Roles,IReadOnlyList<UserPartyOption> Counterparties);

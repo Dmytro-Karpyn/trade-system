@@ -20,7 +20,7 @@ GET `/products?search=...&itemType=GOODS|SERVICE&active=true|false` підтри
 
 React Hook Form + Zod; обов’язкові тип, код, назва та одиниця. Тип за замовчуванням GOODS; SERVICE — той самий Product, без окремого довідника. Helper text пояснює складський облік для GOODS і відсутність залишків/партій для SERVICE.
 
-Є штрихкод, опис, Active. Категорія вимкнена, оскільки API цього довідника немає. Наявний CategoryId та Attributes зберігаються незмінними в PUT; відсутність редактора не очищає їх. Одиниці без відомої назви зі старих даних показуються як «Назву не вказано»; GUID не показується і не підмінюється вигаданою назвою.
+Є штрихкод, опис, Active. Категорію можна вибирати зі спільного дерева /directories/categories; показується повний шлях. Невідоме старе CategoryId зберігається до явної зміни, приховані Attributes не очищаються в PUT. Одиниці без відомої назви зі старих даних показуються як «Назву не вказано»; GUID не показується і не підмінюється вигаданою назвою.
 
 Backend field errors зіставляються з полями форми; наявні обмеження зміни ItemType після використання в документах/цінах пояснюються біля типу. Помилки не очищають введені дані. 409 має загальне повідомлення конфлікту, 401/403 обробляються спільним client. Після збереження detail cache оновлюється, списки/detail invalidated, показується snackbar; успіх створення відкриває detail, редагування повертає до перегляду.
 
@@ -32,7 +32,7 @@ Backend field errors зіставляються з полями форми; на
 - OrganizationId;
 - Name.
 
-Є перевірка непорожньої назви та UNIQUE(OrganizationId, Name). Без Active/Code/Symbol/коефіцієнтів/seed values. GET `/units` — вибір у формі; POST `/units` з `{ "name": "..." }` — простий inline dialog. Organization визначається сервером. GET дозволений product.view/create/edit або settings.manage; POST — product.create/edit або settings.manage. Повноцінного unit directory UI, редагування/видалення одиниць і Category CRUD немає.
+Є перевірка непорожньої назви та UNIQUE(OrganizationId, Name). Наступна міграція DirectoriesAndAudit додає Active; Code/Symbol/коефіцієнтів/seed values немає. GET `/units` — вибір у формі; POST `/units` з `{ "name": "..." }` — простий inline dialog. Organization визначається сервером. GET дозволений product.view/create/edit або settings.manage; POST — product.create/edit або settings.manage. Повноцінний Unit management доступний на /directories/units; PUT /units/{id} потребує settings.manage. Фізичного видалення немає. Category management описано в [directories-admin.md](directories-admin.md).
 
 Product domain model, його колонки та старі зовнішні UnitId не змінено. Невідомі GUID лишаються сумісними; Unit, який уже існує в довіднику іншої організації, заборонений на Product create/update. FK на всі старі UnitId не додається, бо це порушило б існуючі дані. Організації не бачать одиниці одна одної.
 
@@ -42,4 +42,6 @@ Frontend tests покривають завантаження/порожній с
 
 Додатково перевірено production bundle в Chromium через Caddy HTTPS із реальними Identity/PostgreSQL: inline Unit, GOODS/SERVICE create, edit/deactivate, search/filter, reload detail та mobile cards. Дані браузерної перевірки створюються в окремій тимчасовій БД; робоча база не отримує demo Product/Unit seed.
 
-Не реалізуються stock balances, batches, prices, Attributes editor, import/scanner, category tree, unit directory UI, purchase/sale quick create.
+Не реалізуються stock balances, batches, глобальні ціни GOODS, Attributes editor, import/scanner, purchase/sale quick create.
+
+Для SERVICE реалізована секція ProductPrice та необов’язкові початкові ціни: [service-pricing-ui.md](service-pricing-ui.md). GOODS використовує лише ціни партій.

@@ -10,6 +10,22 @@ namespace Trade.Application;
 
 public sealed class SupplierReturnService(ITradeStore store)
 {
+    public Task<ReturnPreview> PreviewAsync(Guid organizationId, Guid actorId, SupplierReturnRequest request, CancellationToken ct) =>
+        store.InTransactionAsync(async token =>
+        {
+            var source = await SourceAsync(organizationId, request.SourcePurchaseInvoiceId, token);
+            await RequireLocationAsync(organizationId, request.StorageLocationId, token);
+            var (products, _) = await ReferencesAsync(organizationId, source, token);
+            var document = Document.Create(organizationId, DocumentType.SUPPLIER_RETURN, request.DocumentDate, request.Comment, request.InternalNote, actorId, DateTimeOffset.UtcNow);
+            var result = SupplierReturn.Create(document, source, request.StorageLocationId, RequireLines(request.Lines), products, await TotalsAsync(source.DocumentId, token));
+            return RefundPreview(result, source);
+        }, ct);
+
+    public static ReturnPreview RefundPreview(SupplierReturn result, PurchaseInvoice source) =>
+        new(ReturnAmounts.Supplier(source, result.Lines.Select(x => (x.SourcePurchaseLineId, x.Quantity))),
+            result.Lines.Select(x => new ReturnPreviewLine(x.SourcePurchaseLineId,
+                ReturnAmounts.Supplier(source, [(x.SourcePurchaseLineId, x.Quantity)]))).ToArray());
+
     public Task<SupplierReturnResponse> CreateAsync(Guid organizationId, Guid actorId, SupplierReturnRequest request, CancellationToken ct) =>
         store.InTransactionAsync(async token =>
         {
@@ -113,14 +129,22 @@ public sealed class SupplierReturnService(ITradeStore store)
         }, ct);
 
     public Task<IReadOnlyList<SupplierReturnableLineResponse>> ReturnableLinesAsync(Guid organizationId, Guid purchaseId,
-        Guid? storageLocationId, CancellationToken ct) => store.InTransactionAsync<IReadOnlyList<SupplierReturnableLineResponse>>(async token =>
+        Guid? storageLocationId, CancellationToken ct, Guid? excludeSupplierReturnId = null) => store.InTransactionAsync<IReadOnlyList<SupplierReturnableLineResponse>>(async token =>
         {
             var source = await SourceAsync(organizationId, purchaseId, token);
             var location = storageLocationId ?? source.StorageLocationId;
             await RequireLocationAsync(organizationId, location, token);
+            if (excludeSupplierReturnId is { } ownId)
+            {
+                var own = await FindAsync(organizationId, ownId, false, token);
+                own.Document.RequireDraft();
+                Guard.Against(own.SourcePurchaseInvoiceId != purchaseId, "The excluded reserve must belong to this source purchase.");
+            }
             var (_, batches) = await ReferencesAsync(organizationId, source, token);
             var totals = await TotalsAsync(purchaseId, token);
             var stocks = (await store.GetStockAsync(BatchIds(batches), null, token))
+                .Where(x => x.StorageLocationId == location).ToDictionary(x => x.BatchId);
+            var forDocument = excludeSupplierReturnId is null ? stocks : (await store.GetStockAsync(BatchIds(batches), excludeSupplierReturnId, token))
                 .Where(x => x.StorageLocationId == location).ToDictionary(x => x.BatchId);
             return source.Lines.Where(x => x.RemovedAt is null).OrderBy(x => x.LineNo).ThenBy(x => x.Id).Select(line =>
             {
@@ -128,10 +152,11 @@ public sealed class SupplierReturnService(ITradeStore store)
                 var returned = totals.GetValueOrDefault(line.Id);
                 var remaining = line.Quantity - returned;
                 stocks.TryGetValue(batch.Id, out var stock);
+                var availableForDocument = forDocument.GetValueOrDefault(batch.Id)?.AvailableQuantity ?? 0m;
                 return new SupplierReturnableLineResponse(line.Id, line.ProductId, batch.Id, line.Quantity, returned, remaining,
                     stock?.PhysicalQuantity ?? 0m, stock?.ReservedQuantity ?? 0m, stock?.AvailableQuantity ?? 0m,
-                    Math.Min(remaining, stock?.AvailableQuantity ?? 0m), line.UnitPriceCurrency, source.DiscountPercent,
-                    source.CurrencyId, source.ExchangeRate);
+                    Math.Min(remaining, availableForDocument), line.UnitPriceCurrency, source.DiscountPercent,
+                    source.CurrencyId, source.ExchangeRate, availableForDocument);
             }).ToArray();
         }, ct);
 

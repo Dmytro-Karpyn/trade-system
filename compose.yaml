@@ -45,7 +45,7 @@ services:
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
     environment:
-      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-:80}
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:-localhost}
       NO_PROXY: api,localhost,127.0.0.1
       no_proxy: api,localhost,127.0.0.1
     ports:
@@ -54,7 +54,7 @@ services:
       - "${HTTPS_PORT:-443}:443/udp"
     depends_on:
       api:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - caddy_data:/data
       - caddy_config:/config

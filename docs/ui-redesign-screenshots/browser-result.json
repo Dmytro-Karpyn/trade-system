@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Desktop login using real cookie and CSRF",
+    "Dashboard existing API metrics/charts/documents, no invented low-stock values",
+    "Sidebar collapse/expand retains active route and accessible links",
+    "Split selection without navigation, selected row, dirty-selection guard, DRAFT save",
+    "POST/UNPOST real backend transitions and returns tab; document rules unchanged",
+    "Direct /sales/:id still works",
+    "Mobile dashboard/cards/detail, sticky 44px actions, bottom navigation and More drawer",
+    "Zero uncaught exceptions and unexpected browser console/request errors"
+  ],
+  "errors": [],
+  "warnings": [],
+  "expected": [
+    "Anonymous /auth/me = 401 before login"
+  ]
+}

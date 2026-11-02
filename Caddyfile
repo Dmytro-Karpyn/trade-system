@@ -1,20 +1,55 @@
-{$CADDY_SITE_ADDRESS::80} {
+{
+	admin 127.0.0.1:2019
+}
+
+# Container liveness only; never published on a host port.
+http://:8081 {
+	bind 127.0.0.1
+	respond /healthz "ok" 200
+}
+
+{$CADDY_SITE_ADDRESS:localhost} {
 	encode zstd gzip
+	header {
+		-Server
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Referrer-Policy strict-origin-when-cross-origin
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+		Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+	}
+	@publicHost not host localhost 127.0.0.1 *.localhost
+	header @publicHost Strict-Transport-Security "max-age=31536000"
+	@privateFiles path /.git /.git/* /.env /.env.* /node_modules/* /backend/* /.config/*
+	handle @privateFiles {
+		respond 404
+	}
+
+	handle /health {
+		header Cache-Control no-store
+		reverse_proxy api:8080
+	}
 
 	# Keep API requests separate from browser document routes such as /products.
 	handle_path /api/* {
+		header Cache-Control no-store
 		reverse_proxy api:8080
 	}
 
 	@backend {
-		path /units /units/* /storage-locations /auth/* /admin/* /health /products /products/* /purchases /purchases/* /sales /sales/* /stock/* /price-types /price-types/* /batches/* /counterparties /counterparties/* /settlements/* /money/* /expense-categories /expense-categories/* /expenses /expenses/* /customer-returns /customer-returns/* /supplier-returns /supplier-returns/* /stock-transfers /stock-transfers/* /write-off-reasons /write-off-reasons/* /write-offs /write-offs/*
+		path /categories /categories/* /currencies /dashboard/* /reports /reports/* /units /units/* /storage-locations /storage-locations/* /auth/* /admin/* /health /products /products/* /purchases /purchases/* /sales /sales/* /stock/* /price-types /price-types/* /batches/* /counterparties /counterparties/* /settlements/* /money/* /expense-categories /expense-categories/* /expenses /expenses/* /customer-returns /customer-returns/* /supplier-returns /supplier-returns/* /stock-transfers /stock-transfers/* /write-off-reasons /write-off-reasons/* /write-offs /write-offs/*
 		not header Accept *text/html*
 	}
 	handle @backend {
+		header Cache-Control no-store
 		reverse_proxy api:8080
 	}
 
 	handle {
+		@assets path /assets/*
+		@documents not path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+		header @documents Cache-Control no-cache
 		root * /srv
 		try_files {path} /index.html
 		file_server

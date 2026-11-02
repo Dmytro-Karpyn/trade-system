@@ -73,7 +73,7 @@ public sealed class ProductQueryAndUnitTests(DatabaseFixture fixture)
         var columns = await api.QueryAsync(db => db.Database.SqlQueryRaw<string>("""
             SELECT column_name AS "Value" FROM information_schema.columns WHERE table_name = 'units'
             """).ToArrayAsync());
-        Assert.Equal(new[] { "Id", "OrganizationId", "Name" }.Order(), columns.Order());
+        Assert.Equal(new[] { "Id", "OrganizationId", "Name", "Active" }.Order(), columns.Order());
         var product = await api.ReadAsync<ProductResponse>(await api.Client.PostAsJsonAsync("/products", api.ProductInput() with { UnitId = unit.Id }, ApiTestHost.Json), HttpStatusCode.Created);
         Assert.Equal(unit.Id, product.UnitId);
         api.SetOrganization(Guid.NewGuid());

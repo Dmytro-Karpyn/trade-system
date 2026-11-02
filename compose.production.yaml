@@ -1,0 +1,130 @@
+name: trade-system-production
+
+x-api: &api
+  image: ${TRADE_API_IMAGE:-trade-system-api:production}
+  build:
+    context: .
+    dockerfile: backend/Trade.Api/Dockerfile
+  init: true
+  security_opt:
+    - no-new-privileges:true
+  cap_drop: [ALL]
+  logging:
+    driver: local
+    options: {max-size: 10m, max-file: '5'}
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set a unique POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    networks: [database]
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    logging:
+      driver: local
+      options: {max-size: 10m, max-file: '5'}
+
+  migrate:
+    <<: *api
+    command: [--migrate]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__TradeDatabase: ${MIGRATION_CONNECTION_STRING:?Set the migration-owner connection string}
+    networks: [database]
+    depends_on:
+      postgres: {condition: service_healthy}
+    restart: 'no'
+    healthcheck: {disable: true}
+
+  api:
+    <<: *api
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__TradeDatabase: ${ConnectionStrings__TradeDatabase:?Set the runtime connection string}
+      ReverseProxy__KnownNetworks__0: ${TRADE_PROXY_SUBNET:-172.30.250.0/24}
+      DataProtection__KeysPath: /home/app/.aspnet/DataProtection-Keys
+      # The loopback host is used only by the in-container readiness probe.
+      AllowedHosts: '${ALLOWED_HOSTS:?Set ALLOWED_HOSTS to the public hostname};127.0.0.1'
+    volumes:
+      - data_protection:/home/app/.aspnet/DataProtection-Keys
+    networks: [database, proxy]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: unless-stopped
+    healthcheck:
+      test: [CMD, dotnet, Trade.Api.dll, --health-check]
+      interval: 20s
+      timeout: 6s
+      retries: 3
+      start_period: 20s
+
+  caddy:
+    image: ${TRADE_WEB_IMAGE:-trade-system-web:production}
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args: {VITE_API_BASE_URL: /api}
+    environment:
+      CADDY_SITE_ADDRESS: ${CADDY_SITE_ADDRESS:?Set the public HTTPS hostname}
+    ports:
+      - '${BIND_ADDRESS:-0.0.0.0}:${HTTP_PORT:-80}:80'
+      - '${BIND_ADDRESS:-0.0.0.0}:${HTTPS_PORT:-443}:443'
+      - '${BIND_ADDRESS:-0.0.0.0}:${HTTPS_PORT:-443}:443/udp'
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [proxy]
+    depends_on:
+      api: {condition: service_healthy}
+    restart: unless-stopped
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, wget, -qO-, 'http://127.0.0.1:8081/healthz']
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: local
+      options: {max-size: 10m, max-file: '5'}
+
+  bootstrap-admin:
+    <<: *api
+    profiles: [maintenance]
+    command: [--bootstrap-admin]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__TradeDatabase: ${ConnectionStrings__TradeDatabase:?Set the runtime connection string}
+      BootstrapAdmin__Username: ${BootstrapAdmin__Username:-}
+      BootstrapAdmin__Password: ${BootstrapAdmin__Password:-}
+      BootstrapAdmin__OrganizationId: ${BootstrapAdmin__OrganizationId:-}
+      BootstrapAdmin__FullName: ${BootstrapAdmin__FullName:-Administrator}
+    networks: [database]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    restart: 'no'
+    healthcheck: {disable: true}
+
+volumes:
+  postgres_data:
+  data_protection:
+  caddy_data:
+  caddy_config:
+
+networks:
+  database:
+    internal: true
+  proxy:
+    ipam:
+      config:
+        - subnet: ${TRADE_PROXY_SUBNET:-172.30.250.0/24}

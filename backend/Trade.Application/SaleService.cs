@@ -28,8 +28,17 @@ public sealed class SaleService(ITradeStore store, ISalePricePermissionProvider 
             return sale.ToResponse();
         }, ct);
 
-    public async Task<SaleResponse> GetAsync(Guid organizationId, Guid id, CancellationToken ct) =>
-        (await FindAsync(organizationId, id, false, ct)).ToResponse();
+    public async Task<SaleResponse> GetAsync(Guid organizationId, Guid id, CancellationToken ct)
+    {
+        var sale = await FindAsync(organizationId, id, false, ct);
+        return sale.ToResponse() with
+        {
+            Products = await store.GetSaleProductsAsync(organizationId, id, ct),
+            Batches = await store.GetSaleBatchesAsync(organizationId, id, ct),
+            PostedByName = await store.GetPurchasePosterNameAsync(organizationId, sale.Document.PostedBy, ct),
+            CounterpartyName = (await store.FindCounterpartyAsync(organizationId, sale.CounterpartyId, false, ct))?.Name
+        };
+    }
 
     public Task<SaleResponse> UpdateAsync(Guid organizationId, Guid id, UpdateSaleRequest request, CancellationToken ct) =>
         store.InTransactionAsync(async token =>
@@ -97,14 +106,19 @@ public sealed class SaleService(ITradeStore store, ISalePricePermissionProvider 
         }, ct);
 
     public async Task<IReadOnlyList<AvailableBatchResponse>> AvailableBatchesAsync(Guid organizationId,
-        Guid productId, Guid storageLocationId, CancellationToken ct)
+        Guid productId, Guid storageLocationId, CancellationToken ct, Guid? excludeSaleId = null)
     {
         Guard.RequiredId(productId, nameof(productId));
         Guard.RequiredId(storageLocationId, nameof(storageLocationId));
+        if (excludeSaleId is { } saleId)
+        {
+            var sale = await FindAsync(organizationId, saleId, false, ct);
+            sale.Document.RequireDraft();
+        }
         var product = await store.FindProductAsync(organizationId, productId, false, ct)
             ?? throw new NotFoundException("Product not found.");
         return product.ItemType == ItemType.SERVICE ? []
-            : await store.GetAvailableBatchesAsync(organizationId, productId, storageLocationId, ct);
+            : await store.GetAvailableBatchesAsync(organizationId, productId, storageLocationId, ct, excludeSaleId);
     }
 
     private async Task<(Dictionary<Guid, Product> Products, Dictionary<Guid, Guid> Batches)> LockReferencesAsync(

@@ -61,6 +61,15 @@ internal sealed partial class EfTradeStore
         if (filter.PurchaseInvoiceId is { } purchaseId) query = query.Where(x => x.PurchaseInvoiceId == purchaseId);
         if (filter.Status is { } status) query = query.Where(x => x.Document.Status == status);
         if (filter.CurrencyId is { } currencyId) query = query.Where(x => x.CurrencyId == currencyId);
+        if (filter.IsPurchaseExpense is { } direct) query = query.Where(x => (x.PurchaseInvoiceId != null) == direct);
+        if (!string.IsNullOrWhiteSpace(filter.Search))
+        {
+            var pattern = "%" + filter.Search.Trim().Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+            query = query.Where(x => x.Document.Number != null && EF.Functions.ILike(x.Document.Number, pattern, "\\")
+                || x.Document.Comment != null && EF.Functions.ILike(x.Document.Comment, pattern, "\\")
+                || db.Counterparties.Any(p => p.Id == x.CounterpartyId && p.OrganizationId == organizationId && EF.Functions.ILike(p.Name, pattern, "\\"))
+                || db.ExpenseCategories.Any(c => c.Id == x.ExpenseCategoryId && c.OrganizationId == organizationId && EF.Functions.ILike(c.Name, pattern, "\\")));
+        }
         return await query.OrderBy(x => x.Document.DocumentDate).ThenBy(x => x.Document.CreatedAt).ThenBy(x => x.DocumentId).ToListAsync(ct);
     }
 

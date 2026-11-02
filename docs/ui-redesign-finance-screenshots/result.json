@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "Real login, existing APIs and isolated fixtures for all five modules",
+    "Money account cards and negative balance without blocking/warning",
+    "Receipt/payment/transfer split selection, Save/POST/UNPOST and derived cross-currency rate",
+    "Settlement selected counterparty, per-currency balances and backend running history",
+    "Direct expense split selection, source purchase link, current cost data and POST/UNPOST",
+    "Customer GOODS/SERVICE compensation and Supplier reserve/available, real POST/UNPOST",
+    "Mobile account/document/balance/expense/return cards, sheets and sticky actions above navigation",
+    "Zero unexpected console/network/page errors and warnings"
+  ],
+  "errors": [],
+  "warnings": [],
+  "expected": [
+    "Anonymous /auth/me = 401 before login"
+  ]
+}

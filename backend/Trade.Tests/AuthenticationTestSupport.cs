@@ -40,8 +40,9 @@ internal static class AuthenticationTestSupport
     }
     public static async Task<RoleResponse> AddRoleAsync(this ApiTestHost api, IReadOnlyList<string> codes, bool active = true)
     {
-        var role = await api.ReadAsync<RoleResponse>(await api.Client.PostAsJsonAsync("/admin/roles", new RoleRequest($"ROLE_{Guid.NewGuid():N}", active), ApiTestHost.Json), HttpStatusCode.Created);
-        return await api.ReadAsync<RoleResponse>(await api.Client.PutAsJsonAsync($"/admin/roles/{role.Id}/permissions", new RolePermissionsRequest(codes), ApiTestHost.Json));
+        var role = await api.ReadAsync<RoleResponse>(await api.Client.PostAsJsonAsync("/admin/roles", new RoleRequest($"ROLE_{Guid.NewGuid():N}", true), ApiTestHost.Json), HttpStatusCode.Created);
+        role = await api.ReadAsync<RoleResponse>(await api.Client.PutAsJsonAsync($"/admin/roles/{role.Id}/permissions", new RolePermissionsRequest(codes), ApiTestHost.Json));
+        return active ? role : await api.ReadAsync<RoleResponse>(await api.Client.PutAsJsonAsync($"/admin/roles/{role.Id}",new RoleRequest(role.Name,false),ApiTestHost.Json));
     }
     public static async Task<UserResponse> AddUserAsync(this ApiTestHost api, IReadOnlyList<Guid>? roles = null, bool active = true, Guid? counterpartyId = null)
         => await api.ReadAsync<UserResponse>(await api.Client.PostAsJsonAsync("/admin/users", new CreateUserRequest($"user_{Guid.NewGuid():N}", Password,

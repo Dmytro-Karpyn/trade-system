@@ -29,11 +29,19 @@ public static class MoneyEndpoints
         MapDocuments(app, "transfers", DocumentType.MONEY_TRANSFER);
         app.MapGet("/money/balances", async (RequestContext context, MoneyService service, CancellationToken ct) =>
             Results.Ok(await service.BalancesAsync(context.OrganizationId, ct))).WithTags("Money").Produces<IReadOnlyList<MoneyBalanceResponse>>();
+        app.MapGet("/money/lookups", async (RequestContext context, IFinanceQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.LookupsAsync(context.OrganizationId, ct))).WithTags("Money").Produces<MoneyLookups>();
+        app.MapGet("/money/account-overview", async (RequestContext context, IFinanceQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.AccountsAsync(context.OrganizationId, ct))).WithTags("Money").Produces<IReadOnlyList<MoneyAccountOverview>>();
     }
 
     private static void MapDocuments(IEndpointRouteBuilder app, string path, DocumentType type)
     {
         var group = app.MapGroup($"/money/{path}").WithTags("Money");
+        group.MapGet("", async (DateOnly? from, DateOnly? to, Guid? accountId, Guid? counterpartyId, Trade.Domain.Money.MoneyPurpose? purpose,
+            DocumentStatus? status, RequestContext context, IFinanceQueries queries, CancellationToken ct) =>
+            Results.Ok(await queries.MoneyListAsync(context.OrganizationId, type, new(from, to, accountId, counterpartyId, purpose, status), ct)))
+            .Produces<IReadOnlyList<MoneyListRow>>();
         group.MapPost("", async (MoneyDocumentRequest request, RequestContext context, MoneyService service, CancellationToken ct) =>
         {
             var document = await service.CreateAsync(context.OrganizationId, context.ActorId, type, request, ct);
@@ -53,5 +61,10 @@ public static class MoneyEndpoints
             _ = context.ActorId;
             return Results.Ok(await service.UnpostAsync(context.OrganizationId, id, type, ct));
         }).Produces<MoneyDocumentResponse>();
+        group.MapDelete("/{id:guid}", async (Guid id, RequestContext context, MoneyService service, CancellationToken ct) =>
+        {
+            await service.DeleteAsync(context.OrganizationId, context.ActorId, id, type, ct);
+            return Results.NoContent();
+        }).Produces(204).ProducesProblem(400).ProducesProblem(404);
     }
 }
