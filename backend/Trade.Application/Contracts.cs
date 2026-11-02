@@ -7,10 +7,10 @@ namespace Trade.Application;
 
 public sealed record ProductFilter(string? Search = null, ItemType? ItemType = null, bool? Active = null);
 
-public sealed record ProductRequest(Guid? CategoryId, Guid UnitId, ItemType ItemType, string Code,
+public sealed record ProductRequest(Guid? CategoryId, Guid UnitId, ItemType ItemType, string? Code,
     string? Barcode, string Name, string? Description, JsonElement? Attributes, bool Active = true)
 {
-    public ProductDetails ToDetails() => new(CategoryId, UnitId, ItemType, Code, Barcode, Name, Description,
+    public ProductDetails ToDetails() => new(CategoryId, UnitId, ItemType, Code ?? string.Empty, Barcode, Name, Description,
         Attributes is { ValueKind: not JsonValueKind.Null } json ? json.GetRawText() : null, Active);
 }
 

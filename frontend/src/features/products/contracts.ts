@@ -12,10 +12,13 @@ export type Unit = z.infer<typeof unitSchema>
 export interface ProductFilters { search: string; itemType: '' | Product['itemType']; active: 'true' | 'false' | '' }
 export const productFormSchema = z.object({
   itemType: itemTypeSchema,
-  code: z.string().trim().min(1, 'Введіть код.'),
+  code: z.string().trim().max(128, 'Код не повинен перевищувати 128 символів.'),
   name: z.string().trim().min(1, 'Введіть назву.'),
   unitId: z.string().min(1, 'Виберіть одиницю виміру.').refine(value => value !== '' ? z.guid().safeParse(value).success : true, 'Виберіть одиницю виміру.'),
   categoryId: z.string().optional(), barcode: z.string(), description: z.string(), active: z.boolean(),
+})
+export const existingProductFormSchema = productFormSchema.extend({
+  code: productFormSchema.shape.code.min(1, 'Введіть код.'),
 })
 export type ProductFormValues = z.infer<typeof productFormSchema>
 export interface ProductInput {

@@ -8,6 +8,7 @@
 - Не додавати microservices, CQRS framework, Redis, Kafka, MongoDB.
 - Кожен наступний функціональний slice має мати integration tests із реальним PostgreSQL через Testcontainers.
 - Усі бізнес-правила повинні виконуватися на backend. Frontend-валідація служить лише для UX.
+- Product Code: blank/null/whitespace при CREATE генерується backend як P000001…P999999, спільно для GOODS/SERVICE у межах Organization. CREATE/UPDATE беруть org-scoped transaction advisory lock перед Code query та Product row locks; використовують наявний UNIQUE (OrganizationId, Code). Manual Code trim/max 128, duplicate → 409 PRODUCT_CODE_EXISTS; UPDATE потребує непорожнього Code. Frontend не прогнозує код, показує відповідь backend; Barcode та старі codes автоматично не змінювати.
 - Batch створюється лише при першому POST рядка закупівлі; UNPOST його зберігає. ProductId рядка з Batch незмінний. SERVICE не може бути рядком закупівлі.
 - Залишки та резерви рахуються через звичайний `v_stock_balance`: physical із StockMovement, reserved із активних рядків не видалених DRAFT SaleInvoice, SupplierReturn, StockTransfer та WriteOff, available = physical - reserved. Не створювати StockReservation або кешовані баланси.
 - Усі зміни stock/reserve виконувати транзакційно під спільними впорядкованими блокуваннями Batch. PUT/POST продажу, SupplierReturn, StockTransfer або WriteOff виключає лише власний reserve; залишок не може бути від’ємним. Помилка — `INSUFFICIENT_STOCK`.

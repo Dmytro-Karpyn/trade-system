@@ -14,6 +14,18 @@ public sealed class TradeExceptionHandler : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
     {
+        if (exception is ConflictException { Message: "PRODUCT_CODE_EXISTS" } or
+            DbUpdateException { InnerException: PostgresException { SqlState: "23505", ConstraintName: "IX_products_OrganizationId_Code" } })
+        {
+            const string message = "Товар або послуга з таким кодом уже існує.";
+            context.Response.StatusCode = StatusCodes.Status409Conflict;
+            await Results.Problem(statusCode: 409, detail: message, extensions: new Dictionary<string, object?>
+            {
+                ["code"] = "PRODUCT_CODE_EXISTS",
+                ["errors"] = new Dictionary<string, string[]> { ["Code"] = [message] }
+            }).ExecuteAsync(context);
+            return true;
+        }
         if (exception is ConflictException { Message: "LAST_ADMIN_REQUIRED" })
         {
             context.Response.StatusCode=409;

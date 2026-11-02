@@ -11,6 +11,8 @@ namespace Trade.Infrastructure.Persistence;
 
 internal sealed partial class EfTradeStore(TradeDbContext db) : ITradeStore
 {
+    private const string NumericProductCodePattern = "^P[0-9]{6}$";
+
     public async Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken)
     {
         await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
@@ -19,6 +21,25 @@ internal sealed partial class EfTradeStore(TradeDbContext db) : ITradeStore
         await transaction.CommitAsync(cancellationToken);
         return result;
     }
+
+    public async Task LockProductCodesAsync(Guid organizationId, CancellationToken cancellationToken) =>
+        // All Product create/update writers take this lock before any Product row lock.
+        // It remains held through SaveChanges and commit, including manual code changes.
+        await db.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtextextended({organizationId.ToString()}, 83932))", cancellationToken);
+
+    public Task<int> NextProductCodeNumberAsync(Guid organizationId, CancellationToken cancellationToken) =>
+        // Called only while the organization's product-code advisory lock is held.
+        // Fixed-width numeric codes share one range across GOODS/SERVICE and active/inactive products.
+        db.Database.SqlQuery<int>($"""
+            SELECT COALESCE(MAX(substring("Code" from 2)::integer), 0) + 1 AS "Value"
+            FROM products
+            WHERE "OrganizationId" = {organizationId} AND "Code" ~ {NumericProductCodePattern}
+            """).SingleAsync(cancellationToken);
+
+    public Task<bool> ProductCodeExistsAsync(Guid organizationId, string code, Guid? exceptProductId, CancellationToken cancellationToken) =>
+        db.Products.AnyAsync(x => x.OrganizationId == organizationId && x.Code == code &&
+            (!exceptProductId.HasValue || x.Id != exceptProductId.Value), cancellationToken);
 
     public async Task<Product?> FindProductAsync(Guid organizationId, Guid id, bool forUpdate, CancellationToken cancellationToken)
     {

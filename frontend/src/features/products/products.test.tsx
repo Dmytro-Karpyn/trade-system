@@ -57,7 +57,8 @@ function setup({ path = '/products', permissions = defaultPermissions, products 
     }
     if (path === '/products' && options?.method === 'POST') {
       if (saveError) return json(saveError.body, saveError.status)
-      const created: Product = { ...goods, ...JSON.parse(options.body as string), id: '019a073c-9ee5-7000-8000-000000000007' }
+      const input = JSON.parse(options.body as string)
+      const created: Product = { ...goods, ...input, code: input.code?.trim() || 'P000042', id: '019a073c-9ee5-7000-8000-000000000007' }
       items.push(created); return json(created, 201)
     }
     if (path === '/products') {
@@ -182,10 +183,74 @@ describe('Product UI', () => {
     expect(screen.queryByRole('textbox', { name: 'Назва' })).not.toBeInTheDocument()
   })
 
-  it('validates code, name and unit before creating a product', async () => {
+  it('requires name and unit but leaves a new product code optional with an automatic-code helper', async () => {
     const { calls } = setup({ path: '/products/new' })
     await userEvent.click(await screen.findByRole('button', { name: 'Створити' }))
-    expect(await screen.findByText('Введіть код.')).toBeVisible(); expect(screen.getByText('Введіть назву.')).toBeVisible(); expect(screen.getByText('Виберіть одиницю виміру.')).toBeVisible()
+    expect(await screen.findByText('Введіть назву.')).toBeVisible(); expect(screen.getByText('Виберіть одиницю виміру.')).toBeVisible()
+    expect(screen.queryByText('Введіть код.')).not.toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Код' })).not.toBeRequired()
+    expect(screen.getByPlaceholderText('Буде створено автоматично')).toHaveValue('')
+    expect(screen.getByText('Буде створено автоматично')).toBeVisible()
+    expect(calls.some(call => call.options?.method === 'POST' && call.path === '/api/products')).toBe(false)
+  })
+
+  it('submits a blank code and shows the backend-generated code in detail and subsequent editing', async () => {
+    const { calls } = setup({ path: '/products/new' })
+    await userEvent.type(await screen.findByRole('textbox', { name: 'Назва' }), 'Автоматичний код')
+    await choose('Одиниця виміру', 'шт.')
+    await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    expect(await screen.findByRole('heading', { name: 'Автоматичний код' })).toBeVisible()
+    expect(screen.getByText('P000042')).toBeVisible()
+    const request = calls.find(call => call.path === '/api/products' && call.options?.method === 'POST')!
+    expect(JSON.parse(request.options?.body as string).code).toBe('')
+    await userEvent.click(screen.getByRole('button', { name: 'Редагувати' }))
+    expect(screen.getByRole('textbox', { name: 'Код' })).toHaveValue('P000042')
+    expect(screen.getByRole('textbox', { name: 'Код' })).toBeRequired()
+    await userEvent.clear(screen.getByRole('textbox', { name: 'Код' }))
+    await userEvent.type(screen.getByRole('textbox', { name: 'Код' }), ' EDIT-001 ')
+    await userEvent.click(screen.getByRole('button', { name: 'Зберегти зміни' }))
+    expect(await screen.findByText('EDIT-001')).toBeVisible()
+    expect(JSON.parse(calls.find(call => call.options?.method === 'PUT')!.options?.body as string).code).toBe('EDIT-001')
+  })
+
+  it('preserves a manually entered trimmed code when creating a product', async () => {
+    const { calls } = setup({ path: '/products/new' })
+    await fillNew()
+    await userEvent.clear(screen.getByRole('textbox', { name: 'Код' }))
+    await userEvent.type(screen.getByRole('textbox', { name: 'Код' }), ' TEST-001 ')
+    await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    expect(await screen.findByRole('heading', { name: 'Новий інструмент' })).toBeVisible()
+    expect(screen.getByText('TEST-001')).toBeVisible()
+    expect(JSON.parse(calls.find(call => call.path === '/api/products' && call.options?.method === 'POST')!.options?.body as string).code).toBe('TEST-001')
+  })
+
+  it('requires a code when editing an existing product and never asks the backend to regenerate it', async () => {
+    const { calls } = setup({ path: `/products/${goods.id}` })
+    await userEvent.click(await screen.findByRole('button', { name: 'Редагувати' }))
+    await userEvent.clear(screen.getByRole('textbox', { name: 'Код' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Зберегти зміни' }))
+    expect(await screen.findByText('Введіть код.')).toBeVisible()
+    expect(calls.some(call => call.options?.method === 'PUT')).toBe(false)
+  })
+
+  it('shows the duplicate-code message at the field and preserves manual input', async () => {
+    const { setSaveError } = setup({ path: '/products/new' })
+    const message = 'Товар або послуга з таким кодом уже існує.'
+    setSaveError(409, { code: 'PRODUCT_CODE_EXISTS', detail: message, errors: { Code: [message] } })
+    await fillNew()
+    await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    await waitFor(() => expect(screen.getAllByText(message).length).toBeGreaterThan(0))
+    expect(screen.getByRole('textbox', { name: 'Код' })).toHaveAccessibleDescription(message)
+    expect(screen.getByRole('textbox', { name: 'Код' })).toHaveValue('NEW-001')
+  })
+
+  it('rejects a manual code exceeding 128 characters before sending a request', async () => {
+    const { calls } = setup({ path: '/products/new' })
+    await fillNew()
+    await userEvent.clear(screen.getByRole('textbox', { name: 'Код' }))
+    await userEvent.type(screen.getByRole('textbox', { name: 'Код' }), 'X'.repeat(129))
+    await userEvent.click(screen.getByRole('button', { name: 'Створити' }))
+    expect(await screen.findByText('Код не повинен перевищувати 128 символів.')).toBeVisible()
     expect(calls.some(call => call.options?.method === 'POST' && call.path === '/api/products')).toBe(false)
   })
 

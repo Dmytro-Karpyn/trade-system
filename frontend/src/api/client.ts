@@ -35,6 +35,7 @@ function errorMessage(status: number, code?: string) {
   if (status === 401) return 'Сеанс завершився. Увійдіть знову.'
   if (status === 403) return 'Недостатньо прав для цієї дії.'
   if (code === 'INSUFFICIENT_STOCK') return 'Недостатньо доступного товару на складі.'
+  if (code === 'PRODUCT_CODE_EXISTS') return 'Товар або послуга з таким кодом уже існує.'
   if (status === 409) return 'Дані змінилися або операція суперечить поточному стану. Оновіть дані та спробуйте ще раз.'
   if (status === 400 || status === 422) return 'Перевірте правильність введених даних.'
   if (status >= 500) return 'Система тимчасово недоступна. Спробуйте пізніше.'

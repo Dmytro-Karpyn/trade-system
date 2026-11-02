@@ -12,7 +12,7 @@ import { ApiError } from '../../api/client'
 import { DocumentActions } from '../../components/DocumentActions'
 import { Icon } from '../../components/Icon'
 import { CreateUnitDialog } from './CreateUnitDialog'
-import { productDefaults, productFormSchema, toProductInput } from './contracts'
+import { existingProductFormSchema, productDefaults, productFormSchema, toProductInput } from './contracts'
 import type { Product, ProductFormValues } from './contracts'
 import { useSaveProduct, useUnits } from './queries'
 import { useProductNotice } from './notices'
@@ -32,7 +32,7 @@ export function ProductForm({ product, saved, cancel, onDirtyChange }: { onDirty
   const save = useSaveProduct(product?.id)
   const notify = useProductNotice()
   const { control, register, handleSubmit, setValue, setError, formState: { errors, isDirty } } = useForm<ProductFormValues>({
-    resolver: zodResolver(productFormSchema),
+    resolver: zodResolver(product ? existingProductFormSchema : productFormSchema),
     defaultValues: product ? { itemType: product.itemType, code: product.code, name: product.name, unitId: product.unitId, categoryId: product.categoryId??'', barcode: product.barcode ?? '', description: product.description ?? '', active: product.active } : productDefaults,
   })
   useEffect(() => { onDirtyChange?.(isDirty) }, [isDirty, onDirtyChange])
@@ -49,6 +49,7 @@ export function ProductForm({ product, saved, cancel, onDirtyChange }: { onDirty
       setPriceErrors(invalid)
       if (Object.keys(invalid).length) return
       const result = created ?? await save.mutateAsync(toProductInput(values, product))
+      setValue('code', result.code)
       if (!product) setCreated(result)
       setSavingPrices(true)
       const pending = wanted.filter(t => completedPrices[t.id] !== Number(initialPrices[t.id]))
@@ -81,7 +82,7 @@ export function ProductForm({ product, saved, cancel, onDirtyChange }: { onDirty
         {save.isError && <Alert severity="error" sx={{ mb: 3 }}>{save.error.message}</Alert>}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2 }}>
           <Controller name="itemType" control={control} render={({ field }) => <FormControl size="small" fullWidth error={Boolean(errors.itemType)}><InputLabel id="product-item-type">Тип *</InputLabel><Select labelId="product-item-type" label="Тип *" {...field}><MenuItem value="GOODS">Товар</MenuItem><MenuItem value="SERVICE">Послуга</MenuItem></Select><FormHelperText>{errors.itemType?.message ?? (itemType === 'SERVICE' ? 'Послуга не має складських залишків і партій' : 'Товар підтримує партії та складський облік')}</FormHelperText></FormControl>} />
-          <TextField label="Код" required fullWidth {...register('code')} error={Boolean(errors.code)} helperText={errors.code?.message} />
+          <TextField label="Код" required={Boolean(product)} placeholder={product ? undefined : 'Буде створено автоматично'} fullWidth {...register('code')} error={Boolean(errors.code)} helperText={errors.code?.message ?? (product ? undefined : 'Буде створено автоматично')} />
           <TextField label="Назва" required fullWidth {...register('name')} error={Boolean(errors.name)} helperText={errors.name?.message} sx={{ gridColumn: '1 / -1' }} />
           <Controller name="categoryId" control={control} render={({field})=><TextField {...field} select label="Категорія" disabled={categories.isPending} error={Boolean(errors.categoryId)} helperText={errors.categoryId?.message??(categories.isError?'Не вдалося завантажити категорії. Поточне значення збережеться.':undefined)}><MenuItem value="">Не вибрано</MenuItem>{field.value&&!categories.data?.some(c=>c.id===field.value)&&<MenuItem value={field.value} disabled>Попередня категорія (назву не задано)</MenuItem>}{directoryTree(categories.data??[]).filter(n=>n.node.active||n.node.id===field.value).map(n=><MenuItem key={n.node.id} value={n.node.id}>{n.path}{n.node.active?'':' (неактивна)'}</MenuItem>)}</TextField>}/>
 

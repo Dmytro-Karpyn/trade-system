@@ -15,6 +15,9 @@ namespace Trade.Application;
 public interface ITradeStore
 {
     Task<T> InTransactionAsync<T>(Func<CancellationToken, Task<T>> operation, CancellationToken cancellationToken);
+    Task LockProductCodesAsync(Guid organizationId, CancellationToken cancellationToken);
+    Task<int> NextProductCodeNumberAsync(Guid organizationId, CancellationToken cancellationToken);
+    Task<bool> ProductCodeExistsAsync(Guid organizationId, string code, Guid? exceptProductId, CancellationToken cancellationToken);
     Task<WriteOffReason?> FindWriteOffReasonAsync(Guid organizationId, Guid id, bool forUpdate, CancellationToken cancellationToken);
     Task<IReadOnlyList<WriteOffReason>> ListWriteOffReasonsAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<WriteOff?> FindWriteOffAsync(Guid organizationId, Guid id, bool forUpdate, CancellationToken cancellationToken);

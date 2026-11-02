@@ -10,6 +10,8 @@ public sealed record ProductDetails(Guid? CategoryId, Guid UnitId, ItemType Item
 
 public sealed class Product
 {
+    public const int MaxCodeLength = 128;
+
     private Product() { }
 
     public Guid Id { get; private set; }
@@ -38,6 +40,7 @@ public sealed class Product
         Guard.Against(details.CategoryId == Guid.Empty, "CategoryId must be null or a nonempty ID.");
         Guard.Against(!Enum.IsDefined(details.ItemType), "Unsupported ItemType.");
         Guard.Against(string.IsNullOrWhiteSpace(details.Code), "Code is required.");
+        Guard.Against(details.Code.Trim().Length > MaxCodeLength, $"Code cannot be longer than {MaxCodeLength} characters.");
         Guard.Against(string.IsNullOrWhiteSpace(details.Name), "Name is required.");
         Guard.Against(details.ItemType == ItemType.SERVICE && hasPurchaseLines,
             "A product referenced by purchase lines cannot become a SERVICE.");
