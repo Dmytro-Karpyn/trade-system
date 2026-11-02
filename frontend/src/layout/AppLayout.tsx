@@ -6,7 +6,7 @@ import { sectionTitle } from '../routes/navigation'
 import { tokens } from '../theme/tokens'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
-import { MobileNavigation } from './MobileNavigation'
+import { MobileNavigation } from './MobileNavigation.tsx'
 
 export function AppLayout() {
   const user = useCurrentUser().data
